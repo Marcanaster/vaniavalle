@@ -132,3 +132,4 @@ D:\VaniaValle\backend\DanceAcademy.Api\obj\Debug\net8.0\ref\DanceAcademy.Api.dll
 D:\VaniaValle\backend\DanceAcademy.Api\bin\Debug\net8.0\Microsoft.AspNetCore.WebUtilities.dll
 D:\VaniaValle\backend\DanceAcademy.Api\bin\Debug\net8.0\Microsoft.Net.Http.Headers.dll
 D:\VaniaValle\backend\DanceAcademy.Api\bin\Debug\net8.0\Resend.dll
+D:\VaniaValle\backend\DanceAcademy.Api\obj\Debug\net8.0\DanceAcademy.Api.sourcelink.json

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "2lM4pgysFW4=",
+  "dgSpecHash": "eoJOrF6EC0U=",
   "success": true,
-  "projectFilePath": "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
+  "projectFilePath": "D:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
   "expectedPackageFiles": [
     "D:\\.nuget\\microsoft.aspnetcore.cryptography.internal\\8.0.26\\microsoft.aspnetcore.cryptography.internal.8.0.26.nupkg.sha512",
     "D:\\.nuget\\microsoft.aspnetcore.cryptography.keyderivation\\8.0.26\\microsoft.aspnetcore.cryptography.keyderivation.8.0.26.nupkg.sha512",

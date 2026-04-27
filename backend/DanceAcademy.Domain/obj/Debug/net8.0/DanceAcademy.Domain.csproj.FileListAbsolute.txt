@@ -9,3 +9,4 @@ D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.d
 D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\refint\DanceAcademy.Domain.dll
 D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.pdb
 D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\ref\DanceAcademy.Domain.dll
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.sourcelink.json

@@ -13,3 +13,4 @@ D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.
 D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\refint\DanceAcademy.Infrastructure.dll
 D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.pdb
 D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\ref\DanceAcademy.Infrastructure.dll
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.sourcelink.json

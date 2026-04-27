@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
 using DanceAcademy.Domain.Interfaces;
 using DanceAcademy.Infrastructure.Services;
 using Resend;
@@ -132,7 +133,13 @@ app.UseCors(builder => builder
     .AllowAnyHeader()
     .AllowCredentials());
 
-app.UseHttpsRedirection();
+// Configurar cabeçalhos para o proxy reverso da VPS (Nginx/Apache)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+// app.UseHttpsRedirection(); // Removido para funcionar corretamente atrás do Proxy Reverso da Hostinger
 
 app.UseAuthentication();
 app.UseAuthorization();
