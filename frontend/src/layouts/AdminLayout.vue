@@ -2,12 +2,12 @@
   <div class="min-h-screen bg-slate-50 flex">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md flex flex-col z-10 relative">
-      <div class="h-16 flex items-center justify-center border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <div class="h-8 w-8 bg-primary rounded-full flex items-center justify-center shadow-sm">
-            <span class="text-white font-bold text-sm">VV</span>
+      <div class="h-24 flex items-center justify-center border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="h-16 w-16 bg-primary rounded-full flex items-center justify-center shadow-sm">
+            <span class="text-white font-bold text-2xl">VV</span>
           </div>
-          <span class="text-lg font-bold text-slate-800 tracking-tight">Painel Gestão</span>
+          <span class="text-2xl font-bold text-slate-800 tracking-tight">Painel Gestão</span>
         </div>
       </div>
       

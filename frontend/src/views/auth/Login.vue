@@ -4,8 +4,8 @@
       <div>
         <!-- Logo simulado com as cores -->
         <div class="flex justify-center">
-            <div class="h-16 w-16 bg-primary rounded-full flex items-center justify-center shadow-md">
-              <span class="text-white font-bold text-2xl">VV</span>
+            <div class="h-32 w-32 bg-primary rounded-full flex items-center justify-center shadow-md">
+              <span class="text-white font-bold text-5xl">VV</span>
             </div>
         </div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-800">

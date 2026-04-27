@@ -3,13 +3,13 @@
     <!-- Navbar Superior -->
     <header class="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center">
+        <div class="flex justify-between h-24 items-center">
           <!-- Logo -->
-          <div class="flex items-center gap-3">
-            <div class="h-10 w-10 bg-primary rounded-full flex items-center justify-center shadow-sm">
-              <span class="text-white font-bold">VV</span>
+          <div class="flex items-center gap-4">
+            <div class="h-20 w-20 bg-primary rounded-full flex items-center justify-center shadow-sm">
+              <span class="text-white font-bold text-3xl">VV</span>
             </div>
-            <span class="text-xl font-bold text-slate-800 tracking-tight hidden sm:block">Portal do Aluno</span>
+            <span class="text-2xl font-bold text-slate-800 tracking-tight hidden sm:block">Portal do Aluno</span>
           </div>
 
           <!-- Ações -->

@@ -5,7 +5,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-20">
           <div class="flex items-center gap-4">
-            <img src="../../assets/logo_academia.png" alt="Academia Vania Valle Logo" class="h-16 md:h-20 w-auto object-contain bg-white/10 rounded-full p-2 shadow-lg" />
+            <img src="../../assets/logo_academia.png" alt="Academia Vania Valle Logo" class="h-32 md:h-40 w-auto object-contain bg-white/10 rounded-full p-2 shadow-lg" />
             <span class="text-white font-bold text-2xl md:text-3xl tracking-tight hidden sm:block">Academia Vania Valle</span>
           </div>
           <nav class="flex gap-4 items-center">
