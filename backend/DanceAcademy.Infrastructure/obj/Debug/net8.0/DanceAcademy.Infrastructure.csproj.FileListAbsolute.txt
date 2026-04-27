@@ -1,0 +1,15 @@
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\bin\Debug\net8.0\DanceAcademy.Infrastructure.deps.json
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\bin\Debug\net8.0\DanceAcademy.Infrastructure.dll
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\bin\Debug\net8.0\DanceAcademy.Infrastructure.pdb
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\bin\Debug\net8.0\DanceAcademy.Domain.dll
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\bin\Debug\net8.0\DanceAcademy.Domain.pdb
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.csproj.AssemblyReference.cache
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.AssemblyInfoInputs.cache
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.AssemblyInfo.cs
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.csproj.CoreCompileInputs.cache
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAca.3431B09D.Up2Date
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.dll
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\refint\DanceAcademy.Infrastructure.dll
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\DanceAcademy.Infrastructure.pdb
+D:\VaniaValle\backend\DanceAcademy.Infrastructure\obj\Debug\net8.0\ref\DanceAcademy.Infrastructure.dll

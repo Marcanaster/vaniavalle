@@ -1,0 +1,11 @@
+D:\VaniaValle\backend\DanceAcademy.Domain\bin\Debug\net8.0\DanceAcademy.Domain.deps.json
+D:\VaniaValle\backend\DanceAcademy.Domain\bin\Debug\net8.0\DanceAcademy.Domain.dll
+D:\VaniaValle\backend\DanceAcademy.Domain\bin\Debug\net8.0\DanceAcademy.Domain.pdb
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.AssemblyInfoInputs.cache
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.AssemblyInfo.cs
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.csproj.CoreCompileInputs.cache
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.dll
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\refint\DanceAcademy.Domain.dll
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\DanceAcademy.Domain.pdb
+D:\VaniaValle\backend\DanceAcademy.Domain\obj\Debug\net8.0\ref\DanceAcademy.Domain.dll

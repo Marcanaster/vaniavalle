@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "dgSpecHash": "2lM4pgysFW4=",
+  "success": true,
+  "projectFilePath": "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
+  "expectedPackageFiles": [
+    "D:\\.nuget\\microsoft.aspnetcore.cryptography.internal\\8.0.26\\microsoft.aspnetcore.cryptography.internal.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.aspnetcore.cryptography.keyderivation\\8.0.26\\microsoft.aspnetcore.cryptography.keyderivation.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.aspnetcore.identity.entityframeworkcore\\8.0.26\\microsoft.aspnetcore.identity.entityframeworkcore.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.aspnetcore.webutilities\\8.0.20\\microsoft.aspnetcore.webutilities.8.0.20.nupkg.sha512",
+    "D:\\.nuget\\microsoft.entityframeworkcore\\8.0.26\\microsoft.entityframeworkcore.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.entityframeworkcore.abstractions\\8.0.26\\microsoft.entityframeworkcore.abstractions.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.entityframeworkcore.analyzers\\8.0.26\\microsoft.entityframeworkcore.analyzers.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.entityframeworkcore.relational\\8.0.26\\microsoft.entityframeworkcore.relational.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.caching.memory\\8.0.1\\microsoft.extensions.caching.memory.8.0.1.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.dependencyinjection\\8.0.1\\microsoft.extensions.dependencyinjection.8.0.1.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.identity.core\\8.0.26\\microsoft.extensions.identity.core.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.identity.stores\\8.0.26\\microsoft.extensions.identity.stores.8.0.26.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.logging\\8.0.1\\microsoft.extensions.logging.8.0.1.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.logging.abstractions\\8.0.2\\microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
+    "D:\\.nuget\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "D:\\.nuget\\microsoft.net.http.headers\\8.0.20\\microsoft.net.http.headers.8.0.20.nupkg.sha512",
+    "D:\\.nuget\\npgsql\\8.0.6\\npgsql.8.0.6.nupkg.sha512",
+    "D:\\.nuget\\npgsql.entityframeworkcore.postgresql\\8.0.11\\npgsql.entityframeworkcore.postgresql.8.0.11.nupkg.sha512",
+    "D:\\.nuget\\resend\\0.5.0\\resend.0.5.0.nupkg.sha512",
+    "D:\\.nuget\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
