@@ -2,6 +2,8 @@ services:
   traefik:
     image: traefik:v3.0
     container_name: traefik
+    environment:
+      - DOCKER_API_VERSION=1.41
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -18,6 +20,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
     restart: unless-stopped
+
+
 
   db:
     image: postgres:16-alpine
