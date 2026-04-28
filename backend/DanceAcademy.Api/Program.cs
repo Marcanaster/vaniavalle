@@ -133,11 +133,14 @@ app.UseCors(builder => builder
     .AllowAnyHeader()
     .AllowCredentials());
 
-// Configurar cabeçalhos para o proxy reverso da VPS (Nginx/Apache)
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+// Configurar cabeçalhos para o proxy reverso da VPS (Traefik/Nginx)
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 // app.UseHttpsRedirection(); // Removido para funcionar corretamente atrás do Proxy Reverso da Hostinger
 
