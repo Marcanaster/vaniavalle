@@ -47,11 +47,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`academiavaniavalle.com.br`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.priority=100"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
       # Redirect HTTP to HTTPS
       - "traefik.http.routers.api-http.rule=Host(`academiavaniavalle.com.br`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api-http.priority=100"
       - "traefik.http.routers.api-http.entrypoints=web"
       - "traefik.http.routers.api-http.middlewares=redirect-to-https"
     depends_on:
