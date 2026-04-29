@@ -11,5 +11,9 @@ public class AgendamentoAula
     
     public DateTime DataAula { get; set; } // Data específica da aula
     public bool PresencaConfirmada { get; set; } = true;
+    
+    public Guid? AulaOcorrenciaId { get; set; }
+    public AulaOcorrencia? AulaOcorrencia { get; set; }
+    
     public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 }

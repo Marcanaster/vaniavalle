@@ -24,6 +24,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<TurmaAluno> TurmasAlunos => Set<TurmaAluno>();
     public DbSet<FaturaItem> FaturaItems => Set<FaturaItem>();
     public DbSet<Presenca> Presencas => Set<Presenca>();
+    public DbSet<TurmaHorario> TurmasHorarios => Set<TurmaHorario>();
+    public DbSet<AulaOcorrencia> AulasOcorrencias => Set<AulaOcorrencia>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -111,5 +113,26 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             .WithMany()
             .HasForeignKey(p => p.AlunoId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Relacionamentos TurmaHorario
+        modelBuilder.Entity<TurmaHorario>()
+            .HasOne(th => th.Turma)
+            .WithMany(t => t.Horarios)
+            .HasForeignKey(th => th.TurmaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Relacionamentos AulaOcorrencia
+        modelBuilder.Entity<AulaOcorrencia>()
+            .HasOne(ao => ao.Turma)
+            .WithMany()
+            .HasForeignKey(ao => ao.TurmaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Relacionamento AgendamentoAula -> AulaOcorrencia
+        modelBuilder.Entity<AgendamentoAula>()
+            .HasOne(ag => ag.AulaOcorrencia)
+            .WithMany(ao => ao.Presencas)
+            .HasForeignKey(ag => ag.AulaOcorrenciaId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

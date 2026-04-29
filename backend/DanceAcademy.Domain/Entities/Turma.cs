@@ -11,8 +11,10 @@ public class Turma
     
     // Horários da turma (simplificado como string para o MVP, ex: "Ter/Qui 18:00")
     public string GradeHorarios { get; set; } = string.Empty; 
+    public string Sala { get; set; } = string.Empty; // Ex: Sala 1, Estúdio A
 
     // Relacionamentos
+    public ICollection<TurmaHorario> Horarios { get; set; } = new List<TurmaHorario>();
     public Guid ModalidadeId { get; set; }
     public Modalidade Modalidade { get; set; } = null!;
     
