@@ -6,8 +6,8 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         </button>
         <div>
-          <h2 class="text-2xl font-bold text-slate-800">Novo Aluno</h2>
-          <p class="text-slate-500">Preencha os dados para matricular um novo aluno.</p>
+          <h2 class="text-2xl font-bold text-slate-800">{{ isEditing ? 'Editar Aluno' : 'Novo Aluno' }}</h2>
+          <p class="text-slate-500">{{ isEditing ? 'Atualize os dados do aluno.' : 'Preencha os dados para matricular um novo aluno.' }}</p>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@
       <div class="flex justify-end gap-4 pb-10">
         <button type="button" @click="$router.back()" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
         <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary hover:bg-primary-dark rounded-lg text-white font-medium transition-colors shadow-sm disabled:opacity-50">
-          {{ loading ? 'Salvando...' : 'Salvar Aluno' }}
+          {{ loading ? 'Salvando...' : (isEditing ? 'Atualizar Dados' : 'Salvar Aluno') }}
         </button>
       </div>
     </form>
@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
@@ -151,6 +151,7 @@ const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
 const buscandoCep = ref(false)
+const isEditing = computed(() => !!route.params.id)
 
 const form = ref({
   nomeCompleto: '',
@@ -206,16 +207,23 @@ watch(() => form.value.cep, async (newCep) => {
 const salvar = async () => {
   loading.value = true
   try {
-    const planosRes = await api.get('/financeiro/planos')
-    if(planosRes.data && planosRes.data.length > 0) {
-      form.value.planoId = planosRes.data[0].id
-    } else {
-      const pRes = await api.post('/financeiro/planos', { nome: 'Mensal Padrão', valor: 150, duracaoMeses: 1 })
-      form.value.planoId = pRes.data.id
+    if (!isEditing.value) {
+      const planosRes = await api.get('/financeiro/planos')
+      if(planosRes.data && planosRes.data.length > 0) {
+        form.value.planoId = planosRes.data[0].id
+      } else {
+        const pRes = await api.post('/financeiro/planos', { nome: 'Mensal Padrão', valor: 150, duracaoMeses: 1 })
+        form.value.planoId = pRes.data.id
+      }
     }
 
-    await api.post('/alunos', form.value)
-    toast.success('Aluno cadastrado com sucesso!')
+    if (isEditing.value) {
+      await api.put(`/alunos/${route.params.id}`, form.value)
+      toast.success('Dados atualizados com sucesso!')
+    } else {
+      await api.post('/alunos', form.value)
+      toast.success('Aluno cadastrado com sucesso!')
+    }
     router.push({ name: 'AdminAlunos' })
   } catch (error) {
     console.error('Erro ao salvar aluno', error)
@@ -224,7 +232,26 @@ const salvar = async () => {
   loading.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (isEditing.value) {
+    try {
+      loading.value = true
+      const res = await api.get(`/alunos`)
+      const aluno = res.data.find(a => a.id === route.params.id)
+      if (aluno) {
+        form.value = {
+          ...aluno,
+          dataNascimento: aluno.dataNascimento.substring(0, 10),
+          responsavel: aluno.responsavel || { nome: '', documento: '', email: '', telefone: '' }
+        }
+      }
+    } catch (err) {
+      toast.error('Erro ao carregar dados do aluno')
+    } finally {
+      loading.value = false
+    }
+  }
+
   if (route.query.nome) {
     form.value.nomeCompleto = route.query.nome
   }

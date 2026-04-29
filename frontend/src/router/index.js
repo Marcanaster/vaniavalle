@@ -33,6 +33,11 @@ const routes = [
         component: () => import('../views/admin/alunos/AlunoForm.vue')
       },
       {
+        path: 'alunos/:id/editar',
+        name: 'AdminAlunosEditar',
+        component: () => import('../views/admin/alunos/AlunoForm.vue')
+      },
+      {
         path: 'turmas',
         name: 'AdminTurmas',
         component: () => import('../views/admin/turmas/TurmasList.vue')
