@@ -75,7 +75,12 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">CEP</label>
-            <input v-model="form.cep" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <div class="relative">
+              <input v-model="form.cep" type="text" maxlength="9" @input="formatarCep" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+              <div v-if="buscandoCep" class="absolute right-3 top-2.5">
+                <div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            </div>
           </div>
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-slate-700 mb-1">Logradouro</label>
@@ -96,6 +101,10 @@
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Cidade</label>
             <input v-model="form.cidade" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Estado (UF)</label>
+            <input v-model="form.estado" type="text" maxlength="2" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border uppercase">
           </div>
         </div>
       </div>
@@ -133,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
@@ -141,6 +150,7 @@ import api from '../../../services/api'
 const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
+const buscandoCep = ref(false)
 
 const form = ref({
   nomeCompleto: '',
@@ -163,6 +173,33 @@ const form = ref({
     documento: '',
     email: '',
     telefone: ''
+  }
+})
+
+const formatarCep = () => {
+  form.value.cep = form.value.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+}
+
+watch(() => form.value.cep, async (newCep) => {
+  const cepLimpo = newCep.replace(/\D/g, '')
+  if (cepLimpo.length === 8) {
+    try {
+      buscandoCep.value = true
+      const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
+      const data = await res.json()
+      
+      if (!data.erro) {
+        form.value.logradouro = data.logradouro
+        form.value.bairro = data.bairro
+        form.value.cidade = data.localidade
+        form.value.estado = data.uf
+        toast.info('Endereço preenchido automaticamente.')
+      }
+    } catch (err) {
+      console.error('Erro ao buscar CEP', err)
+    } finally {
+      buscandoCep.value = false
+    }
   }
 })
 
