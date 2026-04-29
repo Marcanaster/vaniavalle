@@ -140,8 +140,6 @@
         </div>
       </div>
     </section>
-      </div>
-    </section>
 
     <!-- Instagram Feed Simulation -->
     <section class="py-24 bg-slate-900 overflow-hidden">
@@ -187,6 +185,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import api from '../../services/api'
 
+const images = [
+  'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+  'https://images.unsplash.com/photo-1547153760-18fc86324498?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+  'https://images.unsplash.com/photo-1504609774528-69352e0084db?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'
+]
+
 const modalidades = ref([])
 const currentIndex = ref(0)
 const currentImage = ref('')
@@ -206,11 +210,6 @@ const nextImage = () => {
   setCarousel(next)
 }
 
-const images = [
-  'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1547153760-18fc86324498?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1504609774528-69352e0084db?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'
-]
 
 onMounted(async () => {
   currentImage.value = images[0]
