@@ -139,23 +139,30 @@
             <button type="submit" :disabled="saving" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50">
               {{ saving ? 'Salvando...' : 'Salvar Contato' }}
             </button>
-          </div>
-        </form>
-      </div>
     </div>
+
+    <!-- Modal de Confirmação Moderno -->
+    <ConfirmModal 
+      :show="showConfirmDelete"
+      title="Excluir Contato"
+      message="Tem certeza que deseja remover este registro de aula experimental? Esta ação não pode ser desfeita."
+      @confirm="handleConfirmDelete"
+      @cancel="showConfirmDelete = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import api from '../../../services/api';
 import { toast } from 'vue3-toastify';
+import ConfirmModal from '../../../components/ConfirmModal.vue';
 
 const leads = ref([]);
 const loading = ref(true);
 const saving = ref(false);
 const showModal = ref(false);
+const showConfirmDelete = ref(false);
+const leadIdParaExcluir = ref(null);
 const router = useRouter();
 
 const initialFormState = {
@@ -242,15 +249,22 @@ const saveLead = async () => {
   }
 };
 
-const confirmDelete = async (id) => {
-  if (confirm('Tem certeza que deseja excluir este contato?')) {
-    try {
-      await api.delete(`/leads/${id}`);
-      toast.success('Contato excluído com sucesso.');
-      fetchLeads();
-    } catch (error) {
-      toast.error('Erro ao excluir contato.');
-    }
+const confirmDelete = (id) => {
+  leadIdParaExcluir.value = id
+  showConfirmDelete.value = true
+};
+
+const handleConfirmDelete = async () => {
+  const id = leadIdParaExcluir.value
+  try {
+    await api.delete(`/leads/${id}`);
+    toast.success('Contato excluído com sucesso.');
+    fetchLeads();
+  } catch (error) {
+    toast.error('Erro ao excluir contato.');
+  } finally {
+    showConfirmDelete.value = false
+    leadIdParaExcluir.value = null
   }
 };
 

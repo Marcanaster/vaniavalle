@@ -68,12 +68,17 @@
       </div>
       
       <!-- Componente Paginador -->
-      <Pagination 
-        :totalItems="filteredAlunos.length" 
-        v-model:pageSize="pageSize" 
-        v-model:page="currentPage" 
       />
     </div>
+
+    <!-- Modal de Confirmação Moderno -->
+    <ConfirmModal 
+      :show="showConfirmModal"
+      title="Excluir Aluno"
+      message="Tem certeza que deseja remover este aluno? Ele deixará de aparecer na lista de ativos, mas seus registros financeiros serão mantidos."
+      @confirm="handleConfirmarRemocao"
+      @cancel="showConfirmModal = false"
+    />
   </div>
 </template>
 
@@ -82,10 +87,14 @@ import { ref, computed, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
 import Pagination from '../../../components/Pagination.vue'
+import ConfirmModal from '../../../components/ConfirmModal.vue'
 
 const alunos = ref([])
 const loading = ref(true)
 const searchQuery = ref('')
+
+const showConfirmModal = ref(false)
+const alunoIdParaRemover = ref(null)
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -120,15 +129,22 @@ const paginatedAlunos = computed(() => {
   return filteredAlunos.value.slice(start, end)
 })
 
-const remover = async (id) => {
-  if(confirm('Deseja realmente excluir este aluno? (Exclusão Lógica)')) {
-    try {
-      await api.delete(`/alunos/${id}`)
-      alunos.value = alunos.value.filter(a => a.id !== id)
-      toast.success('Aluno removido com sucesso!')
-    } catch(err) {
-      toast.error('Erro ao excluir')
-    }
+const remover = (id) => {
+  alunoIdParaRemover.value = id
+  showConfirmModal.value = true
+}
+
+const handleConfirmarRemocao = async () => {
+  const id = alunoIdParaRemover.value
+  try {
+    await api.delete(`/alunos/${id}`)
+    alunos.value = alunos.value.filter(a => a.id !== id)
+    toast.success('Aluno removido com sucesso!')
+  } catch(err) {
+    toast.error('Erro ao excluir')
+  } finally {
+    showConfirmModal.value = false
+    alunoIdParaRemover.value = null
   }
 }
 

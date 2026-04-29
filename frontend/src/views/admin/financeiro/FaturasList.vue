@@ -82,12 +82,17 @@
         </table>
       </div>
       
-      <Pagination 
-        :totalItems="filteredFaturas.length" 
-        v-model:pageSize="pageSize" 
-        v-model:page="currentPage" 
       />
     </div>
+
+    <!-- Modal de Confirmação Moderno -->
+    <ConfirmModal 
+      :show="showConfirmModal"
+      title="Confirmar Pagamento"
+      message="Deseja confirmar o recebimento deste valor via PIX/Dinheiro? Esta ação não pode ser desfeita."
+      @confirm="handleConfirmarPagamento"
+      @cancel="showConfirmModal = false"
+    />
   </div>
 </template>
 
@@ -96,12 +101,17 @@ import { ref, computed, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
 import Pagination from '../../../components/Pagination.vue'
+import ConfirmModal from '../../../components/ConfirmModal.vue'
 
 const faturas = ref([])
 const loading = ref(true)
 const gerando = ref(false)
 const filterStatus = ref('Todos')
 const expandedId = ref(null)
+
+// Controle do Modal
+const showConfirmModal = ref(false)
+const faturaIdParaPagar = ref(null)
 
 const gerarMensalidades = async () => {
   try {
@@ -148,16 +158,23 @@ const paginatedFaturas = computed(() => {
   return filteredFaturas.value.slice(start, end)
 })
 
-const pagar = async (id) => {
-  if(confirm('Confirmar o recebimento deste valor via PIX/Dinheiro?')) {
-    try {
-      await api.patch(`/financeiro/faturas/${id}/pagar`, { metodoPagamento: 'Pix' })
-      const fatura = faturas.value.find(f => f.id === id)
-      if(fatura) fatura.status = 'Pago'
-      toast.success('Pagamento confirmado com sucesso!')
-    } catch(err) {
-      toast.error('Erro ao processar pagamento.')
-    }
+const pagar = (id) => {
+  faturaIdParaPagar.value = id
+  showConfirmModal.value = true
+}
+
+const handleConfirmarPagamento = async () => {
+  const id = faturaIdParaPagar.value
+  try {
+    await api.patch(`/financeiro/faturas/${id}/pagar`, { metodoPagamento: 'Pix' })
+    const fatura = faturas.value.find(f => f.id === id)
+    if(fatura) fatura.status = 'Pago'
+    toast.success('Pagamento confirmado com sucesso!')
+  } catch(err) {
+    toast.error('Erro ao processar pagamento.')
+  } finally {
+    showConfirmModal.value = false
+    faturaIdParaPagar.value = null
   }
 }
 </script>
