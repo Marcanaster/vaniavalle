@@ -71,6 +71,7 @@ public class TurmasController : ControllerBase
         var turma = await _context.Turmas.Include(t => t.Horarios).FirstOrDefaultAsync(t => t.Id == id);
         if (turma == null) return NotFound();
 
+        // 1. Atualizar campos básicos
         turma.Nome = dto.Nome;
         turma.Nivel = dto.Nivel;
         turma.IdadeMinima = dto.IdadeMinima;
@@ -81,20 +82,34 @@ public class TurmasController : ControllerBase
         turma.ModalidadeId = dto.ModalidadeId;
         turma.ProfessorId = dto.ProfessorId;
 
-        // Limpar horários antigos
-        _context.TurmasHorarios.RemoveRange(turma.Horarios);
-
-        // Adicionar novos horários
-        turma.Horarios = dto.Horarios.Select(h => new TurmaHorario
+        // 2. Limpar horários antigos e salvar para garantir a remoção
+        if (turma.Horarios.Any())
         {
-            Id = Guid.NewGuid(),
-            TurmaId = id,
-            DiaSemana = h.DiaSemana,
-            HoraInicio = TimeSpan.Parse(h.HoraInicio),
-            HoraFim = TimeSpan.Parse(h.HoraFim)
-        }).ToList();
+            _context.TurmasHorarios.RemoveRange(turma.Horarios);
+            await _context.SaveChangesAsync();
+        }
 
-        await _context.SaveChangesAsync();
+        // 3. Adicionar novos horários
+        if (dto.Horarios != null && dto.Horarios.Any())
+        {
+            var novosHorarios = dto.Horarios.Select(h => new TurmaHorario
+            {
+                Id = Guid.NewGuid(),
+                TurmaId = id,
+                DiaSemana = h.DiaSemana,
+                HoraInicio = TimeSpan.Parse(h.HoraInicio),
+                HoraFim = TimeSpan.Parse(h.HoraFim)
+            }).ToList();
+
+            _context.TurmasHorarios.AddRange(novosHorarios);
+            await _context.SaveChangesAsync();
+        }
+        else 
+        {
+            // Se não houver novos horários, apenas salvamos as mudanças nos campos básicos (caso não tenha entrado no if acima)
+            await _context.SaveChangesAsync();
+        }
+
         return NoContent();
     }
 
