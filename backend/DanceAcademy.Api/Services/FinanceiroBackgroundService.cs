@@ -68,13 +68,13 @@ public class FinanceiroBackgroundService : BackgroundService
                     vencimento = new DateTime(refMes.Year, refMes.Month, DateTime.DaysInMonth(refMes.Year, refMes.Month));
                 }
 
-                // Só gera se faltar 10 dias ou menos para o vencimento
-                if (vencimento.Date > hoje.Date && (vencimento.Date - hoje.Date).TotalDays > 10) continue;
+                // REGRA: Só gera a fatura se faltar EXATAMENTE 10 dias para o vencimento (ou menos, caso o robô tenha ficado offline)
+                var diasParaVencimento = (vencimento.Date - hoje.Date).TotalDays;
+                if (diasParaVencimento > 10 || diasParaVencimento < -5) continue; 
 
-                // Não gera se já estiver no passado (já deveria ter sido gerado)
-                // Na verdade, gera se não existir, mesmo que esteja atrasado.
-                
+                // Não gera se já existir fatura de MENSALIDADE para este mês/ano
                 var jaExiste = await context.Faturas
+                    .Include(f => f.Items)
                     .AnyAsync(f => f.AlunoId == aluno.Id && 
                                    f.DataVencimento.Month == refMes.Month && 
                                    f.DataVencimento.Year == refMes.Year &&
@@ -88,13 +88,16 @@ public class FinanceiroBackgroundService : BackgroundService
                     AlunoId = aluno.Id,
                     DataVencimento = vencimento,
                     Status = "Pendente",
-                    Items = turmasAtivas.Select(ta => new FaturaItem
-                    {
-                        Id = Guid.NewGuid(),
-                        Descricao = $"Mensalidade - {ta.Turma.Nome}",
-                        ValorBase = ta.ValorMensal,
-                        DescontoPercentual = ta.DescontoPercentual,
-                        ValorFinal = ta.ValorMensal * (1 - (ta.DescontoPercentual / 100))
+                    Items = turmasAtivas.Select(ta => {
+                        var descontoFinal = Math.Max(aluno.DescontoBolsa, ta.DescontoPercentual);
+                        return new FaturaItem
+                        {
+                            Id = Guid.NewGuid(),
+                            Descricao = $"Mensalidade - {ta.Turma.Nome}",
+                            ValorBase = ta.ValorMensal,
+                            DescontoPercentual = descontoFinal,
+                            ValorFinal = ta.ValorMensal * (1 - (descontoFinal / 100))
+                        };
                     }).ToList()
                 };
 

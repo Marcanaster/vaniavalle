@@ -154,12 +154,15 @@ public class TurmasController : ControllerBase
                 Items = new List<FaturaItem>()
             };
 
+            // Regra: Prevalece o maior desconto (Bolsa do Aluno vs Desconto da Turma)
+            var descontoEfetivo = Math.Max(aluno.DescontoBolsa, request.DescontoPercentual);
+
             if (request.ValorMatricula > 0)
             {
                 fatura.Items.Add(new FaturaItem
                 {
                     Id = Guid.NewGuid(),
-                    Descricao = $"Matrícula - {turma.Nome}",
+                    Descricao = $"Taxa de Matrícula - {turma.Nome}",
                     ValorBase = request.ValorMatricula,
                     DescontoPercentual = 0,
                     ValorFinal = request.ValorMatricula
@@ -168,14 +171,13 @@ public class TurmasController : ControllerBase
 
             if (request.ValorMensal > 0)
             {
-                var valorFinalMensal = request.ValorMensal * (1 - (request.DescontoPercentual / 100));
                 fatura.Items.Add(new FaturaItem
                 {
                     Id = Guid.NewGuid(),
-                    Descricao = $"Mensalidade - {turma.Nome}",
+                    Descricao = $"Primeira Mensalidade (Pro-rata/Adesão) - {turma.Nome}",
                     ValorBase = request.ValorMensal,
-                    DescontoPercentual = request.DescontoPercentual,
-                    ValorFinal = valorFinalMensal
+                    DescontoPercentual = descontoEfetivo,
+                    ValorFinal = request.ValorMensal * (1 - (descontoEfetivo / 100))
                 });
             }
 
@@ -201,5 +203,59 @@ public class TurmasController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+    [HttpPost("{turmaId}/regerar-fatura/{alunoId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RegerarFatura(Guid turmaId, Guid alunoId)
+    {
+        var turma = await _context.Turmas.FindAsync(turmaId);
+        var aluno = await _context.Alunos.FindAsync(alunoId);
+        var matricula = await _context.TurmasAlunos
+            .FirstOrDefaultAsync(ta => ta.TurmaId == turmaId && ta.AlunoId == alunoId && ta.Ativo);
+
+        if (turma == null || aluno == null || matricula == null) 
+            return NotFound("Vínculo não encontrado.");
+
+        // 1. Remover faturas pendentes que contenham esta turma
+        var faturasPendentes = await _context.Faturas
+            .Include(f => f.Items)
+            .Where(f => f.AlunoId == alunoId && f.Status == "Pendente")
+            .ToListAsync();
+
+        foreach (var f in faturasPendentes)
+        {
+            if (f.Items.Any(i => i.Descricao.Contains(turma.Nome)))
+            {
+                _context.Faturas.Remove(f);
+            }
+        }
+
+        // 2. Gerar nova fatura com regras atualizadas
+        var fatura = new Fatura
+        {
+            Id = Guid.NewGuid(),
+            AlunoId = alunoId,
+            DataVencimento = DateTime.UtcNow.AddDays(5),
+            Status = "Pendente",
+            Items = new List<FaturaItem>()
+        };
+
+        var descontoEfetivo = Math.Max(aluno.DescontoBolsa, matricula.DescontoPercentual);
+
+        fatura.Items.Add(new FaturaItem
+        {
+            Id = Guid.NewGuid(),
+            Descricao = $"Fatura Recalculada - {turma.Nome}",
+            ValorBase = matricula.ValorMensal,
+            DescontoPercentual = descontoEfetivo,
+            ValorFinal = matricula.ValorMensal * (1 - (descontoEfetivo / 100))
+        });
+
+        fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
+        _context.Faturas.Add(fatura);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Fatura regerada com sucesso!" });
     }
 }
