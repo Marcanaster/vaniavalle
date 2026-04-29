@@ -18,12 +18,15 @@ public class AlunosController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IEmailService _emailService;
+    private readonly ILogger<AlunosController> _logger;
 
-    public AlunosController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IEmailService emailService)
+
+    public AlunosController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IEmailService emailService, ILogger<AlunosController> logger)
     {
         _context = context;
         _userManager = userManager;
         _emailService = emailService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -67,6 +70,7 @@ public class AlunosController : ControllerBase
                 Cpf = dto.Cpf,
                 DataNascimento = dto.DataNascimento,
                 ContatoEmergencia = dto.ContatoEmergencia,
+                Telefone = dto.Telefone,
                 Cep = dto.Cep,
                 Logradouro = dto.Logradouro,
                 Numero = dto.Numero,
@@ -142,7 +146,14 @@ public class AlunosController : ControllerBase
                     <br>
                     <p>Acesse o sistema para verificar sua agenda e faturas!</p>
                 ";
-                await _emailService.SendEmailAsync(emailLogin, "Bem-vindo à Vania Valle - Dados de Acesso", htmlContent);
+                try
+                {
+                    await _emailService.SendEmailAsync(emailLogin, "Bem-vindo à Vania Valle - Dados de Acesso", htmlContent);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Falha ao enviar e-mail de boas-vindas para {Email}, mas o cadastro foi concluído.", emailLogin);
+                }
             }
 
             await transaction.CommitAsync();
@@ -166,6 +177,7 @@ public class AlunosController : ControllerBase
         aluno.Cpf = dto.Cpf;
         aluno.DataNascimento = dto.DataNascimento;
         aluno.ContatoEmergencia = dto.ContatoEmergencia;
+        aluno.Telefone = dto.Telefone;
         aluno.Cep = dto.Cep;
         aluno.Logradouro = dto.Logradouro;
         aluno.Numero = dto.Numero;

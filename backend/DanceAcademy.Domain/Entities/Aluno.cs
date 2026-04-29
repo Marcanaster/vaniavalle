@@ -7,6 +7,8 @@ public class Aluno
     public string Cpf { get; set; } = string.Empty; // Pode ser vazio caso seja criança
     public DateTime DataNascimento { get; set; }
     public string ContatoEmergencia { get; set; } = string.Empty;
+    public string Telefone { get; set; } = string.Empty;
+
     
     // Endereço
     public string Cep { get; set; } = string.Empty;

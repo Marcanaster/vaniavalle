@@ -29,6 +29,10 @@
             <label class="block text-sm font-medium text-slate-700 mb-1">Data de Nascimento *</label>
             <input v-model="form.dataNascimento" type="date" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
           </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Telefone (Aluno)</label>
+            <input v-model="form.telefone" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="(00) 00000-0000">
+          </div>
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-slate-700 mb-1">Restrições de Saúde</label>
             <textarea v-model="form.restricoesSaude" rows="2" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="Alergias, lesões prévias..."></textarea>
@@ -142,6 +146,7 @@ const form = ref({
   nomeCompleto: '',
   cpf: '',
   dataNascimento: '',
+  telefone: '',
   restricoesSaude: '',
   cep: '',
   logradouro: '',
