@@ -68,7 +68,7 @@ public class TurmasController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateTurma(Guid id, [FromBody] TurmaUpdateDto dto)
     {
-        var turma = await _context.Turmas.FindAsync(id);
+        var turma = await _context.Turmas.Include(t => t.Horarios).FirstOrDefaultAsync(t => t.Id == id);
         if (turma == null) return NotFound();
 
         turma.Nome = dto.Nome;
@@ -81,10 +81,10 @@ public class TurmasController : ControllerBase
         turma.ModalidadeId = dto.ModalidadeId;
         turma.ProfessorId = dto.ProfessorId;
 
-        // Atualizar Horários (Simplificado: remove tudo e adiciona novo)
-        var horariosAntigos = await _context.TurmasHorarios.Where(h => h.TurmaId == id).ToListAsync();
-        _context.TurmasHorarios.RemoveRange(horariosAntigos);
+        // Limpar horários antigos
+        _context.TurmasHorarios.RemoveRange(turma.Horarios);
 
+        // Adicionar novos horários
         turma.Horarios = dto.Horarios.Select(h => new TurmaHorario
         {
             Id = Guid.NewGuid(),
