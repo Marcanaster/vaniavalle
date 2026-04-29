@@ -99,7 +99,7 @@
                 Bolsa ({{ alunoSelecionado?.descontoBolsa || 0 }}%) vs Negociado ({{ matriculaForm.descontoPercentual || 0 }}%)
               </div>
               <div class="text-indigo-800 font-bold uppercase">
-                Desconto Real na Fatura: {{ Math.Max(alunoSelecionado?.descontoBolsa || 0, matriculaForm.descontoPercentual || 0) }}%
+                Desconto Real na Fatura: {{ Math.Max(alunoSelecionado?.descontoBolsa || 0, matriculaForm.descontoPercentual || 0) || 0 }}%
               </div>
             </div>
             <div class="flex justify-end">
@@ -126,9 +126,9 @@
                   {{ matricula.aluno?.nomeCompleto?.substring(0,2).toUpperCase() }}
                 </div>
                 <div>
-                  <div class="font-medium text-slate-800 text-sm">{{ matricula.aluno?.nomeCompleto }}</div>
+                  <div class="font-medium text-slate-800 text-sm">{{ matricula.aluno?.nomeCompleto || 'Aluno não identificado' }}</div>
                   <div class="text-[10px] text-slate-500 uppercase font-semibold">
-                    Acordado: R$ {{ matricula.valorMensal?.toFixed(2) }} 
+                    Acordado: R$ {{ (matricula.valorMensal || 0).toFixed(2) }} 
                     <span v-if="matricula.descontoPercentual > 0" class="text-emerald-600 ml-1">(-{{ matricula.descontoPercentual }}%)</span>
                   </div>
                 </div>
@@ -142,6 +142,14 @@
       </div>
     </div>
 
+    <!-- Modal de Confirmação Moderno para Desmatrícula -->
+    <ConfirmModal 
+      :show="showConfirmRemocao"
+      title="Remover da Turma"
+      message="Tem certeza que deseja remover este aluno desta turma? As faturas já geradas não serão excluídas automaticamente."
+      @confirm="handleConfirmarRemocaoMatricula"
+      @cancel="showConfirmRemocao = false"
+    />
   </div>
 </template>
 
@@ -149,6 +157,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import api from '../../../services/api'
 import { toast } from 'vue3-toastify'
+import ConfirmModal from '../../../components/ConfirmModal.vue'
 
 const turmas = ref([])
 const alunos = ref([])
@@ -159,6 +168,10 @@ const showMatriculasModal = ref(false)
 const turmaSelecionada = ref(null)
 const novoAlunoId = ref('')
 const salvandoMatricula = ref(false)
+
+// Estado para o modal de confirmação de remoção
+const showConfirmRemocao = ref(false)
+const alunoIdParaRemoverDaTurma = ref(null)
 
 const matriculaForm = ref({
   valorMensal: 120,
@@ -241,7 +254,12 @@ const matricularAluno = async () => {
     })
     toast.success('Aluno matriculado com as condições negociadas!')
     await loadTurmas() 
-    turmaSelecionada.value = turmas.value.find(t => t.id === turmaSelecionada.value.id)
+    if (turmaSelecionada.value) {
+      const atualizada = turmas.value.find(t => t.id === turmaSelecionada.value.id)
+      if (atualizada) {
+        turmaSelecionada.value = atualizada
+      }
+    }
     novoAlunoId.value = ''
   } catch (error) {
     toast.error('Erro ao matricular aluno')
@@ -250,9 +268,13 @@ const matricularAluno = async () => {
   }
 }
 
-const removerMatricula = async (alunoId) => {
-  if (!confirm('Deseja realmente remover o aluno desta turma?')) return
-  
+const removerMatricula = (alunoId) => {
+  alunoIdParaRemoverDaTurma.value = alunoId
+  showConfirmRemocao.value = true
+}
+
+const handleConfirmarRemocaoMatricula = async () => {
+  const alunoId = alunoIdParaRemoverDaTurma.value
   try {
     await api.delete(`/turmas/${turmaSelecionada.value.id}/desmatricular/${alunoId}`)
     toast.success('Aluno removido da turma.')
@@ -260,6 +282,9 @@ const removerMatricula = async (alunoId) => {
     turmaSelecionada.value = turmas.value.find(t => t.id === turmaSelecionada.value.id)
   } catch (error) {
     toast.error('Erro ao remover aluno')
+  } finally {
+    showConfirmRemocao.value = false
+    alunoIdParaRemoverDaTurma.value = null
   }
 }
 </script>
