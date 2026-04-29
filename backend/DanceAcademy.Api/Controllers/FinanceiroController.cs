@@ -170,13 +170,18 @@ public class FinanceiroController : ControllerBase
                     AlunoId = aluno.Id,
                     DataVencimento = vencimento,
                     Status = "Pendente",
-                    Items = turmasAtivas.Select(ta => new FaturaItem
-                    {
-                        Id = Guid.NewGuid(),
-                        Descricao = $"Mensalidade - {ta.Turma.Nome}",
-                        ValorBase = ta.ValorMensal,
-                        DescontoPercentual = ta.DescontoPercentual,
-                        ValorFinal = ta.ValorMensal * (1 - (ta.DescontoPercentual / 100))
+                    Items = turmasAtivas.Select(ta => {
+                        // Regra: Prevalece o maior desconto (Bolsa do Aluno vs Desconto da Turma)
+                        var descontoFinal = Math.Max(aluno.DescontoBolsa, ta.DescontoPercentual);
+                        
+                        return new FaturaItem
+                        {
+                            Id = Guid.NewGuid(),
+                            Descricao = $"Mensalidade - {ta.Turma.Nome}",
+                            ValorBase = ta.ValorMensal,
+                            DescontoPercentual = descontoFinal,
+                            ValorFinal = ta.ValorMensal * (1 - (descontoFinal / 100))
+                        };
                     }).ToList()
                 };
 

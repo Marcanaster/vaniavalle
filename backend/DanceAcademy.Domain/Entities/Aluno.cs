@@ -34,6 +34,7 @@ public class Aluno
     public Guid PlanoId { get; set; }
     public Plano Plano { get; set; } = null!;
     public int DiaVencimento { get; set; } = 5;
+    public decimal DescontoBolsa { get; set; } = 0; // Porcentagem de bolsa fixa
     public ICollection<Fatura> Faturas { get; set; } = new List<Fatura>();
     public ICollection<AgendamentoAula> Agendamentos { get; set; } = new List<AgendamentoAula>();
     public ICollection<TurmaAluno> Turmas { get; set; } = new List<TurmaAluno>();

@@ -81,6 +81,7 @@ public class AlunosController : ControllerBase
                 RestricoesSaude = dto.RestricoesSaude,
                 PlanoId = dto.PlanoId,
                 DiaVencimento = dto.DiaVencimento,
+                DescontoBolsa = dto.DescontoBolsa,
                 Ativo = true
             };
 
