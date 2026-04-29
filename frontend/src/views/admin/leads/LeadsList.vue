@@ -139,6 +139,9 @@
             <button type="submit" :disabled="saving" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50">
               {{ saving ? 'Salvando...' : 'Salvar Contato' }}
             </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Modal de Confirmação Moderno -->
@@ -153,6 +156,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../../../services/api';
 import { toast } from 'vue3-toastify';
 import ConfirmModal from '../../../components/ConfirmModal.vue';
