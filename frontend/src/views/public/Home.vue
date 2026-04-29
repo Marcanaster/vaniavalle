@@ -221,9 +221,8 @@ onMounted(async () => {
   currentImage.value = images[0]
   timer = setInterval(nextImage, 5000)
   
-  // Carregar fotos do Instagram localmente
-  const localPhotos = import.meta.glob('../../assets/instagram/*.{png,jpg,jpeg,webp}', { eager: true })
-  instagramPhotos.value = Object.values(localPhotos).map(m => m.default)
+  // Fotos do Instagram na pasta public/instagram/ (1.jpg ate 8.jpg)
+  instagramPhotos.value = [1,2,3,4,5,6,7,8].map(n => `/instagram/${n}.jpg`)
 
   try {
     const res = await api.get('/modalidades')
