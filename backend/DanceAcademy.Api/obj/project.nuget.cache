@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8qVWKpDQZ/U=",
+  "dgSpecHash": "0nVlhTTtIj8=",
   "success": true,
-  "projectFilePath": "D:\\VaniaValle\\backend\\DanceAcademy.Api\\DanceAcademy.Api.csproj",
+  "projectFilePath": "d:\\VaniaValle\\backend\\DanceAcademy.Api\\DanceAcademy.Api.csproj",
   "expectedPackageFiles": [
     "D:\\.nuget\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "D:\\.nuget\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.26\\microsoft.aspnetcore.authentication.jwtbearer.8.0.26.nupkg.sha512",

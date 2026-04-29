@@ -90,8 +90,30 @@
             <input v-model="form.bairro" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Cidade / UF</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Cidade</label>
             <input v-model="form.cidade" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção: Financeiro -->
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">4. Condições Financeiras</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Valor da Matrícula (R$)</label>
+            <input v-model="form.valorMatricula" type="number" step="0.01" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <p class="text-[10px] text-slate-400 mt-1">Deixe 0 para usar o valor padrão do plano.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Dia de Vencimento Preferencial</label>
+            <select v-model="form.diaVencimento" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+              <option :value="5">Dia 05</option>
+              <option :value="10">Dia 10</option>
+              <option :value="15">Dia 15</option>
+              <option :value="20">Dia 20</option>
+              <option :value="25">Dia 25</option>
+            </select>
           </div>
         </div>
       </div>
@@ -107,12 +129,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
 
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 
 const form = ref({
@@ -128,6 +151,8 @@ const form = ref({
   cidade: '',
   estado: '',
   planoId: '00000000-0000-0000-0000-000000000000',
+  diaVencimento: 5,
+  valorMatricula: 0,
   responsavel: {
     nome: '',
     documento: '',
@@ -156,4 +181,13 @@ const salvar = async () => {
   }
   loading.value = false
 }
+
+onMounted(() => {
+  if (route.query.nome) {
+    form.value.nomeCompleto = route.query.nome
+  }
+  if (route.query.telefone) {
+    form.value.responsavel.telefone = route.query.telefone
+  }
+})
 </script>

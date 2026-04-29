@@ -32,6 +32,21 @@
           Turmas
         </router-link>
 
+        <router-link :to="{ name: 'AdminModalidades' }" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-primary-light/10 hover:text-primary transition-all font-medium" active-class="bg-primary text-white hover:bg-primary hover:text-white shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          Modalidades
+        </router-link>
+
+        <router-link :to="{ name: 'AdminProfessores' }" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-primary-light/10 hover:text-primary transition-all font-medium" active-class="bg-primary text-white hover:bg-primary hover:text-white shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          Professores
+        </router-link>
+
+        <router-link :to="{ name: 'AdminLeads' }" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-primary-light/10 hover:text-primary transition-all font-medium" active-class="bg-primary text-white hover:bg-primary hover:text-white shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+          Aulas Exp. (Leads)
+        </router-link>
+
         <router-link :to="{ name: 'AdminFinanceiro' }" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-primary-light/10 hover:text-primary transition-all font-medium" active-class="bg-primary text-white hover:bg-primary hover:text-white shadow-md">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           Financeiro

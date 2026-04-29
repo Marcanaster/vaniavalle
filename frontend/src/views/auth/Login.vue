@@ -64,6 +64,8 @@ const handleLogin = async () => {
   if (success) {
     if (authStore.userRole === 'Admin') {
       router.push({ name: 'AdminDashboard' })
+    } else if (authStore.userRole === 'Teacher') {
+      router.push({ name: 'TeacherDashboard' })
     } else {
       router.push({ name: 'StudentDashboard' })
     }

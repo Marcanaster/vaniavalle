@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using DanceAcademy.Api.DTOs;
 using DanceAcademy.Domain.Entities;
+using DanceAcademy.Domain.Interfaces;
 using DanceAcademy.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -16,11 +17,13 @@ public class AlunosController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IEmailService _emailService;
 
-    public AlunosController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    public AlunosController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IEmailService emailService)
     {
         _context = context;
         _userManager = userManager;
+        _emailService = emailService;
     }
 
     [HttpGet]
@@ -73,6 +76,7 @@ public class AlunosController : ControllerBase
                 Estado = dto.Estado,
                 RestricoesSaude = dto.RestricoesSaude,
                 PlanoId = dto.PlanoId,
+                DiaVencimento = dto.DiaVencimento,
                 Ativo = true
             };
 
@@ -97,9 +101,48 @@ public class AlunosController : ControllerBase
             string emailLogin = dto.Responsavel?.Email ?? $"aluno.{aluno.Cpf}@danceacademy.com";
             var user = new IdentityUser { UserName = emailLogin, Email = emailLogin };
             var result = await _userManager.CreateAsync(user, "Aluno123$"); // Senha padrão para MVP
+            
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "Student");
+                
+                // --- NOVO: GERAÇÃO AUTOMÁTICA DE FATURA ITEMIZADA ---
+                var plano = await _context.Planos.FindAsync(dto.PlanoId);
+                if (plano != null)
+                {
+                    var fatura = new Fatura
+                    {
+                        Id = Guid.NewGuid(),
+                        AlunoId = aluno.Id,
+                        DataVencimento = DateTime.UtcNow.AddDays(5),
+                        Status = "Pendente",
+                        Items = new List<FaturaItem>
+                        {
+                            new FaturaItem
+                            {
+                                Id = Guid.NewGuid(),
+                                Descricao = "Taxa de Matrícula - Plano " + plano.Nome,
+                                ValorBase = dto.ValorMatricula > 0 ? dto.ValorMatricula : plano.Valor,
+                                DescontoPercentual = 0,
+                                ValorFinal = dto.ValorMatricula > 0 ? dto.ValorMatricula : plano.Valor
+                            }
+                        }
+                    };
+                    fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
+                    _context.Faturas.Add(fatura);
+                    await _context.SaveChangesAsync();
+                }
+                // ------------------------------------------
+
+                string htmlContent = $@"
+                    <h2>Olá, {aluno.NomeCompleto}! Bem-vindo(a) à Dance Academy Vania Valle.</h2>
+                    <p>Sua matrícula foi concluída. Abaixo estão os seus dados de acesso ao Portal do Aluno:</p>
+                    <p><b>Seu Login (E-mail):</b> {emailLogin}</p>
+                    <p><b>Sua Senha Provisória:</b> Aluno123$</p>
+                    <br>
+                    <p>Acesse o sistema para verificar sua agenda e faturas!</p>
+                ";
+                await _emailService.SendEmailAsync(emailLogin, "Bem-vindo à Vania Valle - Dados de Acesso", htmlContent);
             }
 
             await transaction.CommitAsync();

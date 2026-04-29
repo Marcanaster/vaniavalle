@@ -2,12 +2,15 @@ using System.Text;
 using Microsoft.AspNetCore.HttpOverrides;
 using DanceAcademy.Domain.Interfaces;
 using DanceAcademy.Infrastructure.Services;
+using DanceAcademy.Api.Services;
 using Resend;
+using DanceAcademy.Domain.Entities;
 using DanceAcademy.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +65,7 @@ builder.Services.AddOptions<ResendClientOptions>().Configure(options =>
 builder.Services.AddHttpClient<ResendClient>();
 builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddScoped<IEmailService, ResendEmailService>();
+builder.Services.AddHostedService<FinanceiroBackgroundService>();
 
 var app = builder.Build();
 
@@ -92,7 +96,7 @@ using (var scope = app.Services.CreateScope())
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
-        string[] roles = { "Admin", "Student" };
+        string[] roles = { "Admin", "Student", "Teacher" };
         foreach (var role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
@@ -110,6 +114,18 @@ using (var scope = app.Services.CreateScope())
             {
                 await userManager.AddToRoleAsync(user, "Admin");
             }
+        }
+
+        // Seed Modalidades Iniciais
+        if (!await context.Modalidades.AnyAsync())
+        {
+            context.Modalidades.AddRange(new List<Modalidade>
+            {
+                new Modalidade { Id = Guid.NewGuid(), Nome = "Ballet", Descricao = "Dança clássica" },
+                new Modalidade { Id = Guid.NewGuid(), Nome = "Jazz", Descricao = "Dança moderna" },
+                new Modalidade { Id = Guid.NewGuid(), Nome = "Hip Hop", Descricao = "Dança urbana" }
+            });
+            await context.SaveChangesAsync();
         }
     }
     catch (Exception ex)

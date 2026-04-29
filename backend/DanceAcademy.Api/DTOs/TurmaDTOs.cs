@@ -9,12 +9,15 @@ public class TurmaCreateDto
     public int CapacidadeAlunos { get; set; }
     public string GradeHorarios { get; set; } = string.Empty; 
     public Guid ModalidadeId { get; set; }
+    public Guid? ProfessorId { get; set; }
 }
 
 public class TurmaUpdateDto : TurmaCreateDto { }
 
-public class ModalidadeCreateDto
+public class MatriculaRequestDto
 {
-    public string Nome { get; set; } = string.Empty;
-    public string Descricao { get; set; } = string.Empty;
+    public Guid AlunoId { get; set; }
+    public decimal ValorMensal { get; set; }
+    public decimal DescontoPercentual { get; set; }
+    public decimal ValorMatricula { get; set; }
 }

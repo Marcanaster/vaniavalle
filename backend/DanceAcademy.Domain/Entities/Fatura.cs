@@ -15,4 +15,6 @@ public class Fatura
     
     // Metodo: Pix, Cartão, Dinheiro
     public string? MetodoPagamento { get; set; } 
+
+    public ICollection<FaturaItem> Items { get; set; } = new List<FaturaItem>();
 }

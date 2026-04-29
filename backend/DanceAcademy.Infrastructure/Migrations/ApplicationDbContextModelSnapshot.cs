@@ -32,10 +32,10 @@ namespace DanceAcademy.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("DataAula")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("PresencaConfirmada")
                         .HasColumnType("boolean");
@@ -86,10 +86,13 @@ namespace DanceAcademy.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("DataExclusao")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("DataNascimento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("DiaVencimento")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Estado")
                         .IsRequired()
@@ -127,6 +130,44 @@ namespace DanceAcademy.Infrastructure.Migrations
                     b.ToTable("Alunos");
                 });
 
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.AulaExperimental", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAgendada")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("DataSolicitacao")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("Idade")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ModalidadeInteresse")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ObservacoesAgent")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TelefoneWhatsApp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AulasExperimentais");
+                });
+
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Fatura", b =>
                 {
                     b.Property<Guid>("Id")
@@ -137,10 +178,10 @@ namespace DanceAcademy.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("DataPagamento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("DataVencimento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("MetodoPagamento")
                         .HasColumnType("text");
@@ -157,6 +198,35 @@ namespace DanceAcademy.Infrastructure.Migrations
                     b.HasIndex("AlunoId");
 
                     b.ToTable("Faturas");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.FaturaItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("DescontoPercentual")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("FaturaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ValorBase")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("ValorFinal")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FaturaId");
+
+                    b.ToTable("FaturaItems");
                 });
 
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Modalidade", b =>
@@ -197,6 +267,69 @@ namespace DanceAcademy.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Planos");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.Presenca", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlunoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Observacao")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Presente")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TurmaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlunoId");
+
+                    b.HasIndex("TurmaId");
+
+                    b.ToTable("Presencas");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.Professor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Especialidade")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Telefone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Professores");
                 });
 
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Responsavel", b =>
@@ -258,11 +391,52 @@ namespace DanceAcademy.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("ProfessorId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ModalidadeId");
 
+                    b.HasIndex("ProfessorId");
+
                     b.ToTable("Turmas");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.TurmaAluno", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlunoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("DataMatricula")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<decimal>("DescontoPercentual")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TurmaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ValorMatricula")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("ValorMensal")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlunoId");
+
+                    b.HasIndex("TurmaId");
+
+                    b.ToTable("TurmasAlunos");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -509,6 +683,36 @@ namespace DanceAcademy.Infrastructure.Migrations
                     b.Navigation("Aluno");
                 });
 
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.FaturaItem", b =>
+                {
+                    b.HasOne("DanceAcademy.Domain.Entities.Fatura", "Fatura")
+                        .WithMany("Items")
+                        .HasForeignKey("FaturaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fatura");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.Presenca", b =>
+                {
+                    b.HasOne("DanceAcademy.Domain.Entities.Aluno", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DanceAcademy.Domain.Entities.Turma", "Turma")
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Turma");
+                });
+
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Turma", b =>
                 {
                     b.HasOne("DanceAcademy.Domain.Entities.Modalidade", "Modalidade")
@@ -517,7 +721,33 @@ namespace DanceAcademy.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("DanceAcademy.Domain.Entities.Professor", "Professor")
+                        .WithMany("Turmas")
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Modalidade");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.TurmaAluno", b =>
+                {
+                    b.HasOne("DanceAcademy.Domain.Entities.Aluno", "Aluno")
+                        .WithMany("Turmas")
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DanceAcademy.Domain.Entities.Turma", "Turma")
+                        .WithMany("AlunosMatriculados")
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Turma");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -576,6 +806,13 @@ namespace DanceAcademy.Infrastructure.Migrations
                     b.Navigation("Agendamentos");
 
                     b.Navigation("Faturas");
+
+                    b.Navigation("Turmas");
+                });
+
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.Fatura", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Modalidade", b =>
@@ -588,6 +825,11 @@ namespace DanceAcademy.Infrastructure.Migrations
                     b.Navigation("Alunos");
                 });
 
+            modelBuilder.Entity("DanceAcademy.Domain.Entities.Professor", b =>
+                {
+                    b.Navigation("Turmas");
+                });
+
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Responsavel", b =>
                 {
                     b.Navigation("Alunos");
@@ -596,6 +838,8 @@ namespace DanceAcademy.Infrastructure.Migrations
             modelBuilder.Entity("DanceAcademy.Domain.Entities.Turma", b =>
                 {
                     b.Navigation("Agendamentos");
+
+                    b.Navigation("AlunosMatriculados");
                 });
 #pragma warning restore 612, 618
         }

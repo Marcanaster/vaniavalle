@@ -46,6 +46,21 @@ const routes = [
         path: 'financeiro',
         name: 'AdminFinanceiro',
         component: () => import('../views/admin/financeiro/FaturasList.vue')
+      },
+      {
+        path: 'professores',
+        name: 'AdminProfessores',
+        component: () => import('../views/admin/professores/ProfessoresList.vue')
+      },
+      {
+        path: 'modalidades',
+        name: 'AdminModalidades',
+        component: () => import('../views/admin/modalidades/ModalidadesList.vue')
+      },
+      {
+        path: 'leads',
+        name: 'AdminLeads',
+        component: () => import('../views/admin/leads/LeadsList.vue')
       }
     ]
   },
@@ -58,6 +73,28 @@ const routes = [
         path: 'dashboard',
         name: 'StudentDashboard',
         component: () => import('../views/student/Dashboard.vue')
+      }
+    ]
+  },
+  {
+    path: '/teacher',
+    component: () => import('../layouts/TeacherLayout.vue'),
+    meta: { requiresAuth: true, role: 'Teacher' },
+    children: [
+      {
+        path: 'dashboard',
+        name: 'TeacherDashboard',
+        component: () => import('../views/teacher/TeacherDashboard.vue')
+      },
+      {
+        path: 'turmas',
+        name: 'TeacherTurmas',
+        component: () => import('../views/teacher/TeacherTurmas.vue')
+      },
+      {
+        path: 'chamada/:id',
+        name: 'TeacherChamada',
+        component: () => import('../views/teacher/TeacherChamada.vue')
       }
     ]
   }
@@ -79,6 +116,7 @@ router.beforeEach((to, from, next) => {
     // Simple role check
     if (to.meta.role && to.meta.role !== authStore.userRole) {
       if (authStore.userRole === 'Admin') return next({ name: 'AdminDashboard' })
+      if (authStore.userRole === 'Teacher') return next({ name: 'TeacherDashboard' })
       if (authStore.userRole === 'Student') return next({ name: 'StudentDashboard' })
       return next({ name: 'Home' })
     }

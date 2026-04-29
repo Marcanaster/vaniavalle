@@ -41,6 +41,22 @@
           <input v-model="form.idadeMaxima" type="number" min="0" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
         </div>
 
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Modalidade *</label>
+          <select v-model="form.modalidadeId" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <option value="" disabled>Selecione uma modalidade</option>
+            <option v-for="m in modalidades" :key="m.id" :value="m.id">{{ m.nome }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Professor Responsável</label>
+          <select v-model="form.professorId" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <option :value="null">Nenhum (Definir depois)</option>
+            <option v-for="p in professores" :key="p.id" :value="p.id">{{ p.nome }}</option>
+          </select>
+        </div>
+
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-slate-700 mb-1">Grade de Horários *</label>
           <input v-model="form.gradeHorarios" type="text" required placeholder="Ex: Seg e Qua 18:00 - 19:30" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
@@ -58,13 +74,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
 
 const router = useRouter()
 const loading = ref(false)
+const modalidades = ref([])
+const professores = ref([])
 
 const form = ref({
   nome: '',
@@ -73,10 +91,35 @@ const form = ref({
   idadeMaxima: 99,
   capacidadeAlunos: 15,
   gradeHorarios: '',
-  modalidadeId: '00000000-0000-0000-0000-000000000000'
+  modalidadeId: '',
+  professorId: null
+})
+
+onMounted(async () => {
+  try {
+    const [modRes, profRes] = await Promise.all([
+      api.get('/modalidades'),
+      api.get('/professores')
+    ])
+    modalidades.value = modRes.data
+    professores.value = profRes.data
+    
+    // Se houver apenas uma modalidade, seleciona por padrão
+    if (modalidades.value.length === 1) {
+      form.value.modalidadeId = modalidades.value[0].id
+    }
+  } catch (err) {
+    console.error('Erro ao carregar dados auxiliares', err)
+    toast.error('Erro ao carregar modalidades ou professores.')
+  }
 })
 
 const salvar = async () => {
+  if (!form.value.modalidadeId) {
+    toast.warning('Selecione uma modalidade!')
+    return
+  }
+  
   loading.value = true
   try {
     await api.post('/turmas', form.value)
@@ -84,7 +127,7 @@ const salvar = async () => {
     router.push({ name: 'AdminTurmas' })
   } catch (error) {
     console.error('Erro ao criar turma', error)
-    toast.error('Erro ao salvar turma.')
+    toast.error('Erro ao salvar turma. Verifique se todos os campos estão corretos.')
   }
   loading.value = false
 }

@@ -18,6 +18,8 @@ public class AlunoCreateDto
 
     public string RestricoesSaude { get; set; } = string.Empty;
     public Guid PlanoId { get; set; }
+    public int DiaVencimento { get; set; } = 5;
+    public decimal ValorMatricula { get; set; }
     
     // Responsavel opcional
     public ResponsavelCreateDto? Responsavel { get; set; }

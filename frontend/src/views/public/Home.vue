@@ -34,9 +34,9 @@
           Aulas de ballet clássico, jazz e danças urbanas para todas as idades.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button class="bg-secondary hover:bg-secondary-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl shadow-secondary/30 transform hover:-translate-y-1">
+          <a href="https://wa.me/5521997416205?text=Olá! Gostaria de agendar uma aula experimental." target="_blank" class="bg-secondary hover:bg-secondary-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl shadow-secondary/30 transform hover:-translate-y-1 inline-block">
             Agende uma Aula Experimental
-          </button>
+          </a>
           <button class="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 px-8 py-4 rounded-full font-bold text-lg transition-all">
             Ver Modalidades
           </button>

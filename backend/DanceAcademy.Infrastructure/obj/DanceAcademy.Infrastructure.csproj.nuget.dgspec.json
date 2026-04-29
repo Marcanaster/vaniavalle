@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj": {}
+    "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj": {}
   },
   "projects": {
-    "D:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj": {
+    "d:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj",
+        "projectUniqueName": "d:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj",
         "projectName": "DanceAcademy.Domain",
-        "projectPath": "D:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj",
+        "projectPath": "d:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj",
         "packagesPath": "D:\\.nuget",
-        "outputPath": "D:\\VaniaValle\\backend\\DanceAcademy.Domain\\obj\\",
+        "outputPath": "d:\\VaniaValle\\backend\\DanceAcademy.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -72,14 +72,14 @@
         }
       }
     },
-    "D:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj": {
+    "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
+        "projectUniqueName": "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
         "projectName": "DanceAcademy.Infrastructure",
-        "projectPath": "D:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
+        "projectPath": "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\DanceAcademy.Infrastructure.csproj",
         "packagesPath": "D:\\.nuget",
-        "outputPath": "D:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\obj\\",
+        "outputPath": "d:\\VaniaValle\\backend\\DanceAcademy.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -102,8 +102,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj": {
-                "projectPath": "D:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj"
+              "d:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj": {
+                "projectPath": "d:\\VaniaValle\\backend\\DanceAcademy.Domain\\DanceAcademy.Domain.csproj"
               }
             }
           }

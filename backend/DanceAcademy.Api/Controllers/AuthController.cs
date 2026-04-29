@@ -2,8 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using DanceAcademy.Api.DTOs;
+using DanceAcademy.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DanceAcademy.Api.Controllers;
@@ -14,11 +16,13 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
 
-    public AuthController(UserManager<IdentityUser> userManager, IConfiguration configuration)
+    public AuthController(UserManager<IdentityUser> userManager, IConfiguration configuration, ApplicationDbContext context)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _context = context;
     }
 
     [HttpPost("login")]
@@ -39,6 +43,14 @@ public class AuthController : ControllerBase
             foreach (var userRole in userRoles)
             {
                 authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            // --- VACINA: GARANTE ROLE DE PROFESSOR SE FOR UM ---
+            var isProfessor = await _context.Professores.AnyAsync(p => p.UserId == user.Id);
+            if (isProfessor && !userRoles.Contains("Teacher"))
+            {
+                await _userManager.AddToRoleAsync(user, "Teacher");
+                authClaims.Add(new Claim(ClaimTypes.Role, "Teacher"));
             }
 
             var token = GetToken(authClaims);

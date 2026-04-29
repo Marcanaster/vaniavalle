@@ -19,6 +19,11 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<Plano> Planos => Set<Plano>();
     public DbSet<Fatura> Faturas => Set<Fatura>();
     public DbSet<AgendamentoAula> Agendamentos => Set<AgendamentoAula>();
+    public DbSet<AulaExperimental> AulasExperimentais => Set<AulaExperimental>();
+    public DbSet<Professor> Professores => Set<Professor>();
+    public DbSet<TurmaAluno> TurmasAlunos => Set<TurmaAluno>();
+    public DbSet<FaturaItem> FaturaItems => Set<FaturaItem>();
+    public DbSet<Presenca> Presencas => Set<Presenca>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,11 +53,38 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             .HasForeignKey(t => t.ModalidadeId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Relacionamento Turma -> Professor
+        modelBuilder.Entity<Turma>()
+            .HasOne(t => t.Professor)
+            .WithMany(p => p.Turmas)
+            .HasForeignKey(t => t.ProfessorId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Relacionamento TurmaAluno (Matrícula)
+        modelBuilder.Entity<TurmaAluno>()
+            .HasOne(ta => ta.Turma)
+            .WithMany(t => t.AlunosMatriculados)
+            .HasForeignKey(ta => ta.TurmaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TurmaAluno>()
+            .HasOne(ta => ta.Aluno)
+            .WithMany(a => a.Turmas)
+            .HasForeignKey(ta => ta.AlunoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Relacionamento Fatura -> Aluno
         modelBuilder.Entity<Fatura>()
             .HasOne(f => f.Aluno)
             .WithMany(a => a.Faturas)
             .HasForeignKey(f => f.AlunoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Relacionamento Fatura -> FaturaItem
+        modelBuilder.Entity<FaturaItem>()
+            .HasOne(fi => fi.Fatura)
+            .WithMany(f => f.Items)
+            .HasForeignKey(fi => fi.FaturaId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Relacionamento Agendamento -> Aluno e Turma
@@ -66,5 +98,18 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         modelBuilder.Entity<Responsavel>().Property(r => r.Nome).HasMaxLength(150);
         modelBuilder.Entity<Aluno>().Property(a => a.NomeCompleto).HasMaxLength(150);
         modelBuilder.Entity<Turma>().Property(t => t.Nome).HasMaxLength(100);
+
+        // Relacionamento Presenca
+        modelBuilder.Entity<Presenca>()
+            .HasOne(p => p.Turma)
+            .WithMany()
+            .HasForeignKey(p => p.TurmaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Presenca>()
+            .HasOne(p => p.Aluno)
+            .WithMany()
+            .HasForeignKey(p => p.AlunoId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
