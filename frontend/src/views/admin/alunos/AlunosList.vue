@@ -67,7 +67,10 @@
         </table>
       </div>
       
-      <!-- Componente Paginador -->
+      <Pagination 
+        :totalItems="filteredAlunos.length" 
+        v-model:pageSize="pageSize" 
+        v-model:page="currentPage" 
       />
     </div>
 

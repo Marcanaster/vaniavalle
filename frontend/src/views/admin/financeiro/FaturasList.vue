@@ -81,7 +81,10 @@
           </tbody>
         </table>
       </div>
-      
+      <Pagination 
+        :totalItems="filteredFaturas.length" 
+        v-model:pageSize="pageSize" 
+        v-model:page="currentPage" 
       />
     </div>
 
