@@ -25,6 +25,7 @@ public class Aluno
 
     // Questionário de Saúde/Anamnese
     public string RestricoesSaude { get; set; } = string.Empty;
+    public string? UserId { get; set; }
     
     // Relacionamentos
     public Guid? ResponsavelId { get; set; } // Nullable caso o aluno seja adulto e o próprio responsável

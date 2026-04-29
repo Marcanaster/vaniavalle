@@ -84,50 +84,86 @@ public class AlunosController : ControllerBase
                 Ativo = true
             };
 
-            if (dto.Responsavel != null && !string.IsNullOrWhiteSpace(dto.Responsavel.Nome))
+            // Lógica de Responsável e Acesso
+            Responsavel? responsavel = null;
+            string? userId = null;
+
+            if (dto.Responsavel != null && !string.IsNullOrWhiteSpace(dto.Responsavel.Email))
             {
-                var responsavel = new Responsavel
+                // Tenta encontrar responsável existente pelo e-mail
+                responsavel = await _context.Responsaveis.FirstOrDefaultAsync(r => r.Email == dto.Responsavel.Email);
+
+                if (responsavel == null)
                 {
-                    Id = Guid.NewGuid(),
-                    Nome = dto.Responsavel.Nome,
-                    Documento = dto.Responsavel.Documento,
-                    Email = dto.Responsavel.Email,
-                    Telefone = dto.Responsavel.Telefone
-                };
-                _context.Responsaveis.Add(responsavel);
+                    responsavel = new Responsavel
+                    {
+                        Id = Guid.NewGuid(),
+                        Nome = dto.Responsavel.Nome,
+                        Documento = dto.Responsavel.Documento,
+                        Email = dto.Responsavel.Email,
+                        Telefone = dto.Responsavel.Telefone
+                    };
+                    _context.Responsaveis.Add(responsavel);
+                }
+                
                 aluno.ResponsavelId = responsavel.Id;
             }
 
             _context.Alunos.Add(aluno);
             await _context.SaveChangesAsync();
 
-            // Criar o usuário de acesso para o aluno (Identity)
-            string emailLogin = dto.Responsavel?.Email ?? $"aluno.{aluno.Cpf}@danceacademy.com";
-            var user = new IdentityUser { UserName = emailLogin, Email = emailLogin };
-            var result = await _userManager.CreateAsync(user, "Aluno123$"); // Senha padrão para MVP
+            // Gerenciar Usuário de Acesso
+            string emailLogin = responsavel?.Email ?? (string.IsNullOrWhiteSpace(aluno.Cpf) ? $"aluno.{aluno.Id.ToString().Substring(0,8)}@danceacademy.com" : $"aluno.{aluno.Cpf}@danceacademy.com");
             
-            if (result.Succeeded)
+            var existingUser = await _userManager.FindByEmailAsync(emailLogin);
+            if (existingUser == null)
             {
-                await _userManager.AddToRoleAsync(user, "Student");
-                
-                // ------------------------------------------
+                var user = new IdentityUser { UserName = emailLogin, Email = emailLogin };
+                var result = await _userManager.CreateAsync(user, "Aluno123$");
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "Student");
+                    userId = user.Id;
+                    if (responsavel != null)
+                    {
+                        responsavel.UserId = userId;
+                    }
+                    else
+                    {
+                        aluno.UserId = userId;
+                    }
+                }
+            }
+            else
+            {
+                userId = existingUser.Id;
+                if (responsavel != null && responsavel.UserId == null)
+                {
+                    responsavel.UserId = userId;
+                }
+                else if (responsavel == null && aluno.UserId == null)
+                {
+                    aluno.UserId = userId;
+                }
+            }
 
+            await _context.SaveChangesAsync();
+
+            // E-mail de Boas-vindas
+            if (userId != null)
+            {
+                string destinatario = responsavel?.Nome ?? aluno.NomeCompleto;
                 string htmlContent = $@"
-                    <h2>Olá, {aluno.NomeCompleto}! Bem-vindo(a) à Dance Academy Vania Valle.</h2>
-                    <p>Sua matrícula foi concluída. Abaixo estão os seus dados de acesso ao Portal do Aluno:</p>
-                    <p><b>Seu Login (E-mail):</b> {emailLogin}</p>
-                    <p><b>Sua Senha Provisória:</b> Aluno123$</p>
+                    <h2>Olá, {destinatario}!</h2>
+                    <p>A matrícula de <b>{aluno.NomeCompleto}</b> na Dance Academy Vania Valle foi concluída com sucesso.</p>
+                    <p>Acesse o Portal do Aluno para acompanhar as aulas e faturas:</p>
+                    <p><b>Login:</b> {emailLogin}</p>
+                    <p><b>Senha Provisória:</b> Aluno123$</p>
                     <br>
-                    <p>Acesse o sistema para verificar sua agenda e faturas!</p>
+                    <p>Se você já possui outros alunos cadastrados, utilize seu login atual.</p>
                 ";
-                try
-                {
-                    await _emailService.SendEmailAsync(emailLogin, "Bem-vindo à Vania Valle - Dados de Acesso", htmlContent);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Falha ao enviar e-mail de boas-vindas para {Email}, mas o cadastro foi concluído.", emailLogin);
-                }
+                try { await _emailService.SendEmailAsync(emailLogin, "Matrícula Concluída - Dance Academy", htmlContent); }
+                catch { /* Log error */ }
             }
 
             await transaction.CommitAsync();
@@ -210,53 +246,75 @@ public class AlunosController : ControllerBase
     public async Task<IActionResult> GetMeuPerfil()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        var aluno = await _context.Alunos
-            .Include(a => a.Turmas)
-                .ThenInclude(ta => ta.Turma)
-                    .ThenInclude(t => t.Modalidade)
-            .Include(a => a.Turmas)
-                .ThenInclude(ta => ta.Turma)
-                    .ThenInclude(t => t.Horarios)
-            .Include(a => a.Faturas.OrderByDescending(f => f.DataVencimento))
-            .FirstOrDefaultAsync(a => a.UserId == userId);
+        List<Aluno> alunos = new List<Aluno>();
+        string nomeExibicao = "Aluno";
 
-        if (aluno == null) 
+        // 1. Tentar encontrar como Responsável (Família)
+        var responsavel = await _context.Responsaveis
+            .Include(r => r.Alunos)
+                .ThenInclude(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Modalidade)
+            .Include(r => r.Alunos)
+                .ThenInclude(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Horarios)
+            .Include(r => r.Alunos)
+                .ThenInclude(a => a.Faturas)
+            .FirstOrDefaultAsync(r => r.UserId == userId);
+
+        if (responsavel != null)
         {
-            // Se for admin testando, pega o primeiro aluno
-            if (User.IsInRole("Admin"))
+            alunos = responsavel.Alunos.ToList();
+            nomeExibicao = responsavel.Nome;
+        }
+        else
+        {
+            // 2. Tentar encontrar como Aluno Individual (Adulto)
+            var alunoIndividual = await _context.Alunos
+                .Include(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Modalidade)
+                .Include(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Horarios)
+                .Include(a => a.Faturas)
+                .FirstOrDefaultAsync(a => a.UserId == userId);
+
+            if (alunoIndividual != null)
             {
-                aluno = await _context.Alunos
+                alunos.Add(alunoIndividual);
+                nomeExibicao = alunoIndividual.NomeCompleto;
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                // Fallback para Admin testando
+                var primeiroAluno = await _context.Alunos
                     .Include(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Modalidade)
                     .Include(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Horarios)
                     .Include(a => a.Faturas)
                     .FirstOrDefaultAsync();
+                if (primeiroAluno != null) alunos.Add(primeiroAluno);
+                nomeExibicao = "Administrador (Simulando Aluno)";
             }
         }
 
-        if (aluno == null) return NotFound("Perfil de aluno não encontrado.");
-
         return Ok(new {
-            aluno.Id,
-            aluno.NomeCompleto,
-            Turmas = aluno.Turmas.Where(t => t.Ativo).Select(ta => new {
-                ta.Turma.Id,
-                ta.Turma.Nome,
-                ta.Turma.Nivel,
-                ta.Turma.GradeHorarios,
-                ta.Turma.Sala,
-                Modalidade = ta.Turma.Modalidade.Nome,
-                Horarios = ta.Turma.Horarios.Select(h => new {
-                    h.DiaSemana,
-                    h.HoraInicio,
-                    h.HoraFim
+            NomeUsuario = nomeExibicao,
+            Dependentes = alunos.Select(a => new {
+                a.Id,
+                a.NomeCompleto,
+                Turmas = a.Turmas.Where(t => t.Ativo).Select(ta => new {
+                    ta.Turma.Id,
+                    ta.Turma.Nome,
+                    ta.Turma.Nivel,
+                    ta.Turma.GradeHorarios,
+                    ta.Turma.Sala,
+                    Modalidade = ta.Turma.Modalidade.Nome,
+                    Horarios = ta.Turma.Horarios.Select(h => new {
+                        h.DiaSemana,
+                        h.HoraInicio,
+                        h.HoraFim
+                    })
+                }),
+                Faturas = a.Faturas.Select(f => new {
+                    f.Id,
+                    f.ValorTotal,
+                    f.DataVencimento,
+                    f.Status
                 })
-            }),
-            Faturas = aluno.Faturas.Select(f => new {
-                f.Id,
-                f.ValorTotal,
-                f.DataVencimento,
-                f.Status
             })
         });
     }

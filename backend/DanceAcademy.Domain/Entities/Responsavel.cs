@@ -7,6 +7,7 @@ public class Responsavel
     public string Documento { get; set; } = string.Empty; // CPF
     public string Email { get; set; } = string.Empty;
     public string Telefone { get; set; } = string.Empty;
+    public string? UserId { get; set; }
     
     public ICollection<Aluno> Alunos { get; set; } = new List<Aluno>();
 }
