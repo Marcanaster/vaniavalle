@@ -204,4 +204,60 @@ public class AlunosController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpGet("meu-perfil")]
+    [Authorize]
+    public async Task<IActionResult> GetMeuPerfil()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        var aluno = await _context.Alunos
+            .Include(a => a.Turmas)
+                .ThenInclude(ta => ta.Turma)
+                    .ThenInclude(t => t.Modalidade)
+            .Include(a => a.Turmas)
+                .ThenInclude(ta => ta.Turma)
+                    .ThenInclude(t => t.Horarios)
+            .Include(a => a.Faturas.OrderByDescending(f => f.DataVencimento))
+            .FirstOrDefaultAsync(a => a.UserId == userId);
+
+        if (aluno == null) 
+        {
+            // Se for admin testando, pega o primeiro aluno
+            if (User.IsInRole("Admin"))
+            {
+                aluno = await _context.Alunos
+                    .Include(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Modalidade)
+                    .Include(a => a.Turmas).ThenInclude(ta => ta.Turma).ThenInclude(t => t.Horarios)
+                    .Include(a => a.Faturas)
+                    .FirstOrDefaultAsync();
+            }
+        }
+
+        if (aluno == null) return NotFound("Perfil de aluno não encontrado.");
+
+        return Ok(new {
+            aluno.Id,
+            aluno.NomeCompleto,
+            Turmas = aluno.Turmas.Where(t => t.Ativo).Select(ta => new {
+                ta.Turma.Id,
+                ta.Turma.Nome,
+                ta.Turma.Nivel,
+                ta.Turma.GradeHorarios,
+                ta.Turma.Sala,
+                Modalidade = ta.Turma.Modalidade.Nome,
+                Horarios = ta.Turma.Horarios.Select(h => new {
+                    h.DiaSemana,
+                    h.HoraInicio,
+                    h.HoraFim
+                })
+            }),
+            Faturas = aluno.Faturas.Select(f => new {
+                f.Id,
+                f.ValorTotal,
+                f.DataVencimento,
+                f.Status
+            })
+        });
+    }
 }

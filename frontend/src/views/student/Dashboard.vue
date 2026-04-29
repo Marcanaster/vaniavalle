@@ -24,14 +24,14 @@
         <div v-else class="space-y-4">
           <div v-for="ag in agendamentos" :key="ag.id" class="flex items-start gap-4 p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-primary/5 transition-colors">
             <div class="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
-              {{ ag.turma?.nome?.charAt(0) || 'T' }}
+              {{ ag.nome?.charAt(0) || 'T' }}
             </div>
             <div>
-              <h3 class="font-bold text-slate-800">{{ ag.turma?.nome || 'Turma não encontrada' }}</h3>
-              <p class="text-sm text-slate-500 mb-1">Nível: {{ ag.turma?.nivel || '-' }}</p>
+              <h3 class="font-bold text-slate-800">{{ ag.nome }}</h3>
+              <p class="text-sm text-slate-500 mb-1">{{ ag.modalidade }} • {{ ag.sala || 'Sala não definida' }}</p>
               <div class="inline-flex items-center gap-1 text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                {{ ag.turma?.gradeHorarios || 'Horário a definir' }}
+                {{ ag.gradeHorarios || 'Horário a definir' }}
               </div>
             </div>
           </div>
@@ -79,21 +79,26 @@ const faturas = ref([])
 const loadingAulas = ref(true)
 const loadingFaturas = ref(true)
 
-onMounted(async () => {
-  const userId = authStore.userId
-  
-  try {
-    const res = await api.get(`/financeiro/faturas`) 
-    faturas.value = res.data.filter(f => f.status === 'Pendente').slice(0, 3) 
-  } catch(e) { console.error(e) }
-  loadingFaturas.value = false
+const perfil = ref(null)
 
+onMounted(async () => {
   try {
-    const resAg = await api.get('/agendamentos/turma/fake-id')
-    agendamentos.value = resAg.data
+    loadingAulas.value = true
+    loadingFaturas.value = true
+    
+    const res = await api.get('/alunos/meu-perfil')
+    perfil.value = res.data
+    
+    agendamentos.value = res.data.turmas || []
+    faturas.value = res.data.faturas || []
+    
   } catch(e) { 
+    console.error('Erro ao carregar perfil do aluno:', e)
     agendamentos.value = []
+    faturas.value = []
+  } finally {
+    loadingAulas.value = false
+    loadingFaturas.value = false
   }
-  loadingAulas.value = false
 })
 </script>
