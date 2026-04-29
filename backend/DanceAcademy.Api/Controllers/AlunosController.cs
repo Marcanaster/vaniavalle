@@ -110,32 +110,6 @@ public class AlunosController : ControllerBase
             {
                 await _userManager.AddToRoleAsync(user, "Student");
                 
-                // --- NOVO: GERAÇÃO AUTOMÁTICA DE FATURA ITEMIZADA ---
-                var plano = await _context.Planos.FindAsync(dto.PlanoId);
-                if (plano != null)
-                {
-                    var fatura = new Fatura
-                    {
-                        Id = Guid.NewGuid(),
-                        AlunoId = aluno.Id,
-                        DataVencimento = DateTime.UtcNow.AddDays(5),
-                        Status = "Pendente",
-                        Items = new List<FaturaItem>
-                        {
-                            new FaturaItem
-                            {
-                                Id = Guid.NewGuid(),
-                                Descricao = "Taxa de Matrícula - Plano " + plano.Nome,
-                                ValorBase = dto.ValorMatricula > 0 ? dto.ValorMatricula : plano.Valor,
-                                DescontoPercentual = 0,
-                                ValorFinal = dto.ValorMatricula > 0 ? dto.ValorMatricula : plano.Valor
-                            }
-                        }
-                    };
-                    fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
-                    _context.Faturas.Add(fatura);
-                    await _context.SaveChangesAsync();
-                }
                 // ------------------------------------------
 
                 string htmlContent = $@"
