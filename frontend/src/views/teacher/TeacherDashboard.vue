@@ -32,20 +32,30 @@
     <div v-else class="grid gap-4">
       <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider px-1">Aulas de Hoje</h3>
       <div v-for="turma in turmasHoje" :key="turma.id" 
-           @click="$router.push({ name: 'TeacherChamada', params: { id: turma.id } })"
-           class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer active:scale-95 transition-transform">
-        <div class="flex items-center gap-4">
+           class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between transition-all"
+           :class="{'opacity-50 grayscale': turma.status === 'Cancelada'}">
+        <div class="flex items-center gap-4 cursor-pointer flex-1" @click="turma.status !== 'Cancelada' && $router.push({ name: 'TeacherChamada', params: { id: turma.id } })">
           <div class="w-12 h-12 bg-slate-50 rounded-lg flex flex-col items-center justify-center border border-slate-100">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ turma.diaSemana }}</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ turma.diaSemanaNome }}</span>
             <span class="text-xs font-bold text-primary">{{ turma.horario }}</span>
           </div>
           <div>
-            <h4 class="font-bold text-slate-800">{{ turma.nome }}</h4>
+            <div class="flex items-center gap-2">
+              <h4 class="font-bold text-slate-800">{{ turma.nome }}</h4>
+              <span v-if="turma.status === 'Cancelada'" class="bg-rose-100 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded">CANCELADA</span>
+            </div>
             <p class="text-xs text-slate-500">{{ turma.modalidade?.nome }} • {{ turma.alunosMatriculados?.length || 0 }} alunos</p>
+            <p v-if="turma.status === 'Cancelada'" class="text-[10px] text-rose-400 italic">Motivo: {{ turma.motivoCancelamento || 'Não informado' }}</p>
           </div>
         </div>
-        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        
+        <div class="flex items-center gap-2">
+          <button v-if="turma.status !== 'Cancelada'" @click="cancelarAula(turma)" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Cancelar Aula">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+          <div v-else class="text-rose-500 p-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+          </div>
         </div>
       </div>
     </div>
@@ -75,15 +85,62 @@ onMounted(async () => {
 })
 
 const turmasHoje = computed(() => {
-  const hojeDsc = diasSemanaMap[new Date().getDay()]
-  return turmas.value.filter(t => t.gradeHorarios.includes(hojeDsc)).map(t => {
-    return {
-      ...t,
-      diaSemana: hojeDsc,
-      horario: t.gradeHorarios.split(' ').pop()
+  const hojeIdx = new Date().getDay()
+  const hojeNome = diasSemanaMap[hojeIdx]
+  
+  const list = []
+  turmas.value.forEach(t => {
+    // Procura nos horários estruturados
+    const horariosHoje = t.horarios?.filter(h => h.diaSemana === hojeIdx) || []
+    horariosHoje.forEach(h => {
+      list.push({
+        ...t,
+        diaSemanaNome: hojeNome,
+        horario: h.horaInicio.substring(0, 5),
+        status: 'Ativa' // TODO: Buscar status real das ocorrências
+      })
+    })
+
+    // Fallback para legado se não houver estruturado
+    if (horariosHoje.length === 0 && t.gradeHorarios.includes(hojeNome)) {
+      list.push({
+        ...t,
+        diaSemanaNome: hojeNome,
+        horario: t.gradeHorarios.split(' ').pop(),
+        status: 'Ativa'
+      })
     }
-  }).sort((a, b) => a.horario.localeCompare(b.horario))
+  })
+
+  return list.sort((a, b) => a.horario.localeCompare(b.horario))
 })
+
+const cancelarAula = async (turma) => {
+  const motivo = prompt(`Motivo para cancelar a aula de ${turma.nome} às ${turma.horario}:`)
+  if (motivo === null) return // Cancelou o prompt
+
+  try {
+    loading.value = true
+    const dataHora = new Date()
+    const [h, m] = turma.horario.split(':')
+    dataHora.setHours(parseInt(h), parseInt(m), 0, 0)
+
+    await api.post('/aulas/cancelar', {
+      turmaId: turma.id,
+      dataHora: dataHora.toISOString(),
+      motivo: motivo || 'Cancelamento pelo professor'
+    })
+    
+    // Atualiza localmente para feedback imediato
+    turma.status = 'Cancelada'
+    turma.motivoCancelamento = motivo
+    alert('Aula cancelada com sucesso!')
+  } catch (err) {
+    alert('Erro ao cancelar aula.')
+  } finally {
+    loading.value = false
+  }
+}
 
 const proximaAula = computed(() => {
   if (turmasHoje.value.length === 0) return null

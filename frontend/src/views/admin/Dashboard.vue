@@ -75,14 +75,21 @@
           </div>
           
           <div v-else class="space-y-4">
-            <div v-for="(aula, index) in metrics.aulasHoje" :key="aula.id" class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div v-for="(aula, index) in metrics.aulasHoje" :key="aula.id" class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100" :class="{'opacity-50 grayscale': aula.status === 'Cancelada'}">
               <div class="flex items-center gap-4">
-                <div :class="[index % 2 === 0 ? 'bg-primary/20 text-primary' : 'bg-secondary/20 text-secondary', 'h-12 w-12 rounded-lg flex flex-col items-center justify-center']">
+                <div :class="[
+                  aula.status === 'Cancelada' ? 'bg-slate-200 text-slate-500' : (index % 2 === 0 ? 'bg-primary/20 text-primary' : 'bg-secondary/20 text-secondary'), 
+                  'h-14 w-14 rounded-lg flex flex-col items-center justify-center flex-shrink-0'
+                ]">
                   <span class="text-sm font-bold">{{ aula.horario }}</span>
                 </div>
                 <div>
-                  <p class="font-bold text-slate-800">{{ aula.nome }}</p>
-                  <p class="text-sm text-slate-500">{{ aula.alunosConfirmados }} Alunos matriculados</p>
+                  <div class="flex items-center gap-2">
+                    <p class="font-bold text-slate-800">{{ aula.nome }}</p>
+                    <span v-if="aula.status === 'Cancelada'" class="bg-rose-100 text-rose-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Cancelada</span>
+                  </div>
+                  <p class="text-xs text-slate-500 font-medium uppercase tracking-tight">{{ aula.modalidade }} • {{ aula.sala || 'Sem Sala' }}</p>
+                  <p class="text-xs text-slate-400">{{ aula.alunosConfirmados }} matriculados</p>
                 </div>
               </div>
             </div>
