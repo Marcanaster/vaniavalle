@@ -59,7 +59,7 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href="#" class="text-primary hover:text-primary-dark mr-3">Editar</a>
+                <router-link :to="{ name: 'AdminAlunosEditar', params: { id: aluno.id } }" class="text-primary hover:text-primary-dark mr-3">Editar</router-link>
                 <button @click="remover(aluno.id)" class="text-secondary hover:text-secondary-dark">Remover</button>
               </td>
             </tr>

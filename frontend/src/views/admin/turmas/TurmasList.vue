@@ -92,6 +92,16 @@
                 <input v-model="matriculaForm.valorMatricula" type="number" step="0.01" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm">
               </div>
             </div>
+            
+            <div v-if="novoAlunoId" class="flex items-center justify-between text-[11px] bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+              <div class="text-indigo-700 font-medium">
+                <span class="font-bold">Regra de Desconto:</span> 
+                Bolsa ({{ alunoSelecionado?.descontoBolsa || 0 }}%) vs Negociado ({{ matriculaForm.descontoPercentual || 0 }}%)
+              </div>
+              <div class="text-indigo-800 font-bold uppercase">
+                Desconto Real na Fatura: {{ Math.Max(alunoSelecionado?.descontoBolsa || 0, matriculaForm.descontoPercentual || 0) }}%
+              </div>
+            </div>
             <div class="flex justify-end">
               <button @click="matricularAluno" :disabled="!novoAlunoId || salvandoMatricula" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold transition-colors disabled:opacity-50 shadow-sm flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -136,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import api from '../../../services/api'
 import { toast } from 'vue3-toastify'
 
@@ -153,7 +163,24 @@ const salvandoMatricula = ref(false)
 const matriculaForm = ref({
   valorMensal: 120,
   descontoPercentual: 0,
-  valorMatricula: 50
+  valorMatricula: 0
+})
+
+const alunoSelecionado = computed(() => {
+  if (!novoAlunoId.value) return null
+  return alunos.value.find(a => a.id === novoAlunoId.value)
+})
+
+// Observar quando um aluno é selecionado para sugerir o desconto da bolsa dele
+watch(novoAlunoId, (id) => {
+  if (id) {
+    const aluno = alunoSelecionado.value
+    if (aluno && aluno.descontoBolsa > 0) {
+      matriculaForm.value.descontoPercentual = aluno.descontoBolsa
+    } else {
+      matriculaForm.value.descontoPercentual = 0
+    }
+  }
 })
 
 const loadTurmas = async () => {
