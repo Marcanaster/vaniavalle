@@ -40,31 +40,66 @@ public class DashboardController : ControllerBase
             .Where(f => f.Status == "Pago" && f.DataPagamento.HasValue && f.DataPagamento.Value.Month == mesAtual && f.DataPagamento.Value.Year == anoAtual)
             .SumAsync(f => f.ValorTotal);
 
-        // Aulas de Hoje
-        var diaSemanaAtual = DateTime.UtcNow.DayOfWeek switch
-        {
-            DayOfWeek.Sunday => "Dom",
-            DayOfWeek.Monday => "Seg",
-            DayOfWeek.Tuesday => "Ter",
-            DayOfWeek.Wednesday => "Qua",
-            DayOfWeek.Thursday => "Qui",
-            DayOfWeek.Friday => "Sex",
-            DayOfWeek.Saturday => "Sab",
-            _ => ""
-        };
+        // Aulas de Hoje (Sempre usa UTC-3 para o Brasil se necessário, mas aqui usaremos o padrão do servidor)
+        var hoje = DateTime.Today;
+        var diaSemanaInt = (int)hoje.DayOfWeek;
 
-        var turmas = await _context.Turmas
-            .Include(t => t.Agendamentos)
-            .Where(t => t.GradeHorarios.Contains(diaSemanaAtual))
+        // 1. Buscar ocorrências já geradas para hoje (incluindo as canceladas)
+        var ocorrenciasHoje = await _context.AulasOcorrencias
+            .Include(o => o.Turma)
+            .ThenInclude(t => t.Modalidade)
+            .Include(o => o.Presencas)
+            .Where(o => o.DataHora.Date == hoje)
             .ToListAsync();
 
-        var aulasHoje = turmas.Select(t => new TurmaHojeDto
+        // 2. Buscar turmas que deveriam ter aula hoje mas ainda não tem ocorrência gerada
+        var turmasComHorarioHoje = await _context.Turmas
+            .Include(t => t.Modalidade)
+            .Include(t => t.Horarios)
+            .Where(t => t.Horarios.Any(h => h.DiaSemana == diaSemanaInt))
+            .ToListAsync();
+
+        var aulasHoje = new List<TurmaHojeDto>();
+
+        // Adicionar ocorrências existentes
+        foreach (var oc in ocorrenciasHoje)
         {
-            Id = t.Id,
-            Nome = t.Nome,
-            Horario = ExtractTimeFromGrade(t.GradeHorarios),
-            AlunosConfirmados = t.Agendamentos.Count(a => a.DataAula.Date == DateTime.UtcNow.Date && a.PresencaConfirmada)
-        }).OrderBy(a => a.Horario).ToList();
+            aulasHoje.Add(new TurmaHojeDto
+            {
+                Id = oc.Id,
+                Nome = oc.Turma.Nome,
+                Modalidade = oc.Turma.Modalidade.Nome,
+                Horario = oc.DataHora.ToString("HH:mm"),
+                Sala = oc.Turma.Sala,
+                Status = oc.Status,
+                AlunosConfirmados = oc.Presencas.Count(p => p.PresencaConfirmada)
+            });
+        }
+
+        // Adicionar turmas que ainda não tem ocorrência (considerar ativas)
+        foreach (var turma in turmasComHorarioHoje)
+        {
+            var horariosHoje = turma.Horarios.Where(h => h.DiaSemana == diaSemanaInt);
+            foreach (var h in horariosHoje)
+            {
+                // Se já existe ocorrência para este horário, pula
+                if (ocorrenciasHoje.Any(oc => oc.TurmaId == turma.Id && oc.DataHora.TimeOfDay == h.HoraInicio))
+                    continue;
+
+                aulasHoje.Add(new TurmaHojeDto
+                {
+                    Id = turma.Id,
+                    Nome = turma.Nome,
+                    Modalidade = turma.Modalidade.Nome,
+                    Horario = h.HoraInicio.ToString(@"hh\:mm"),
+                    Sala = turma.Sala,
+                    Status = "Ativa",
+                    AlunosConfirmados = 0
+                });
+            }
+        }
+
+        aulasHoje = aulasHoje.OrderBy(a => a.Horario).ToList();
 
         // Últimos Pagamentos
         var ultimosPagamentos = await _context.Faturas

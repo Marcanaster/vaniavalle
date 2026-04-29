@@ -14,7 +14,10 @@ public class TurmaHojeDto
 {
     public Guid Id { get; set; }
     public string Nome { get; set; } = string.Empty;
+    public string Modalidade { get; set; } = string.Empty;
     public string Horario { get; set; } = string.Empty;
+    public string Sala { get; set; } = string.Empty;
+    public string Status { get; set; } = "Ativa"; // Ativa ou Cancelada
     public int AlunosConfirmados { get; set; }
 }
 

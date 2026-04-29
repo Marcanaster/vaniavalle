@@ -164,6 +164,7 @@ public class ProfessoresController : ControllerBase
 
         var turmas = await _context.Turmas
             .Include(t => t.Modalidade)
+            .Include(t => t.Horarios)
             .Include(t => t.AlunosMatriculados)
                 .ThenInclude(ta => ta.Aluno)
             .Where(t => t.ProfessorId == professor.Id)

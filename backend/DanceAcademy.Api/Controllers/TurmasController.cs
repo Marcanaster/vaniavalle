@@ -25,6 +25,7 @@ public class TurmasController : ControllerBase
         var turmas = await _context.Turmas
             .Include(t => t.Modalidade)
             .Include(t => t.Professor)
+            .Include(t => t.Horarios)
             .Include(t => t.AlunosMatriculados)
                 .ThenInclude(ta => ta.Aluno)
             .ToListAsync();
@@ -45,8 +46,16 @@ public class TurmasController : ControllerBase
             IdadeMaxima = dto.IdadeMaxima,
             CapacidadeAlunos = dto.CapacidadeAlunos,
             GradeHorarios = dto.GradeHorarios,
+            Sala = dto.Sala,
             ModalidadeId = dto.ModalidadeId,
-            ProfessorId = dto.ProfessorId
+            ProfessorId = dto.ProfessorId,
+            Horarios = dto.Horarios.Select(h => new TurmaHorario
+            {
+                Id = Guid.NewGuid(),
+                DiaSemana = h.DiaSemana,
+                HoraInicio = TimeSpan.Parse(h.HoraInicio),
+                HoraFim = TimeSpan.Parse(h.HoraFim)
+            }).ToList()
         };
 
         _context.Turmas.Add(turma);
@@ -68,8 +77,22 @@ public class TurmasController : ControllerBase
         turma.IdadeMaxima = dto.IdadeMaxima;
         turma.CapacidadeAlunos = dto.CapacidadeAlunos;
         turma.GradeHorarios = dto.GradeHorarios;
+        turma.Sala = dto.Sala;
         turma.ModalidadeId = dto.ModalidadeId;
         turma.ProfessorId = dto.ProfessorId;
+
+        // Atualizar Horários (Simplificado: remove tudo e adiciona novo)
+        var horariosAntigos = await _context.TurmasHorarios.Where(h => h.TurmaId == id).ToListAsync();
+        _context.TurmasHorarios.RemoveRange(horariosAntigos);
+
+        turma.Horarios = dto.Horarios.Select(h => new TurmaHorario
+        {
+            Id = Guid.NewGuid(),
+            TurmaId = id,
+            DiaSemana = h.DiaSemana,
+            HoraInicio = TimeSpan.Parse(h.HoraInicio),
+            HoraFim = TimeSpan.Parse(h.HoraFim)
+        }).ToList();
 
         await _context.SaveChangesAsync();
         return NoContent();
