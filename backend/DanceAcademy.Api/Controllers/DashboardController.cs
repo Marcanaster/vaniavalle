@@ -56,6 +56,7 @@ public class DashboardController : ControllerBase
         var turmasComHorarioHoje = await _context.Turmas
             .Include(t => t.Modalidade)
             .Include(t => t.Horarios)
+            .Include(t => t.AlunosMatriculados)
             .Where(t => t.Horarios.Any(h => h.DiaSemana == diaSemanaInt))
             .ToListAsync();
 
@@ -94,7 +95,7 @@ public class DashboardController : ControllerBase
                     Horario = h.HoraInicio.ToString(@"hh\:mm"),
                     Sala = turma.Sala,
                     Status = "Ativa",
-                    AlunosConfirmados = 0
+                    AlunosConfirmados = turma.AlunosMatriculados.Count(m => m.Ativo)
                 });
             }
         }
