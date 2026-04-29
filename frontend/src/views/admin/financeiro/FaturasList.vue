@@ -58,8 +58,14 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button v-if="fatura.status === 'Pendente'" @click.stop="pagar(fatura.id)" class="text-primary hover:text-primary-dark font-semibold">Confirmar Pgto</button>
-                  <span v-else class="text-slate-400">Ok</span>
+                  <div class="flex items-center justify-end gap-3">
+                    <button v-if="fatura.status === 'Pendente'" @click.stop="pagar(fatura.id)" class="text-primary hover:text-primary-dark font-semibold">Confirmar Pgto</button>
+                    <span v-else class="text-emerald-600 font-medium">Pago</span>
+                    
+                    <button @click.stop="pedirExclusao(fatura.id)" class="text-slate-400 hover:text-rose-500 transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
               <!-- Itens Expandidos -->
@@ -91,9 +97,9 @@
     <!-- Modal de Confirmação Moderno -->
     <ConfirmModal 
       :show="showConfirmModal"
-      title="Confirmar Pagamento"
-      message="Deseja confirmar o recebimento deste valor via PIX/Dinheiro? Esta ação não pode ser desfeita."
-      @confirm="handleConfirmarPagamento"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      @confirm="handleModalConfirm"
       @cancel="showConfirmModal = false"
     />
   </div>
@@ -114,7 +120,21 @@ const expandedId = ref(null)
 
 // Controle do Modal
 const showConfirmModal = ref(false)
-const faturaIdParaPagar = ref(null)
+const faturaIdEmFoco = ref(null)
+const modalAction = ref('') // 'pagar' ou 'excluir'
+
+const modalConfig = computed(() => {
+  if (modalAction.value === 'pagar') {
+    return {
+      title: 'Confirmar Pagamento',
+      message: 'Deseja confirmar o recebimento deste valor via PIX/Dinheiro? Esta ação não pode ser desfeita.'
+    }
+  }
+  return {
+    title: 'Excluir Fatura',
+    message: 'Tem certeza que deseja remover esta fatura permanentemente? Esta ação não pode ser desfeita.'
+  }
+})
 
 const gerarMensalidades = async () => {
   try {
@@ -162,12 +182,27 @@ const paginatedFaturas = computed(() => {
 })
 
 const pagar = (id) => {
-  faturaIdParaPagar.value = id
+  faturaIdEmFoco.value = id
+  modalAction.value = 'pagar'
   showConfirmModal.value = true
 }
 
+const pedirExclusao = (id) => {
+  faturaIdEmFoco.value = id
+  modalAction.value = 'excluir'
+  showConfirmModal.value = true
+}
+
+const handleModalConfirm = async () => {
+  if (modalAction.value === 'pagar') {
+    await handleConfirmarPagamento()
+  } else {
+    await handleConfirmarExclusao()
+  }
+}
+
 const handleConfirmarPagamento = async () => {
-  const id = faturaIdParaPagar.value
+  const id = faturaIdEmFoco.value
   try {
     await api.patch(`/financeiro/faturas/${id}/pagar`, { metodoPagamento: 'Pix' })
     const fatura = faturas.value.find(f => f.id === id)
@@ -177,7 +212,19 @@ const handleConfirmarPagamento = async () => {
     toast.error('Erro ao processar pagamento.')
   } finally {
     showConfirmModal.value = false
-    faturaIdParaPagar.value = null
+  }
+}
+
+const handleConfirmarExclusao = async () => {
+  const id = faturaIdEmFoco.value
+  try {
+    await api.delete(`/financeiro/faturas/${id}`)
+    faturas.value = faturas.value.filter(f => f.id !== id)
+    toast.success('Fatura removida com sucesso!')
+  } catch(err) {
+    toast.error('Erro ao excluir fatura.')
+  } finally {
+    showConfirmModal.value = false
   }
 }
 </script>
