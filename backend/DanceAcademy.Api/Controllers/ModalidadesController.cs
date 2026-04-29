@@ -20,6 +20,7 @@ public class ModalidadesController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var modalidades = await _context.Modalidades.OrderBy(m => m.Nome).ToListAsync();
