@@ -99,7 +99,7 @@
                 Bolsa ({{ alunoSelecionado?.descontoBolsa || 0 }}%) vs Negociado ({{ matriculaForm.descontoPercentual || 0 }}%)
               </div>
               <div class="text-indigo-800 font-bold uppercase">
-                Desconto Real na Fatura: {{ Math.Max(alunoSelecionado?.descontoBolsa || 0, matriculaForm.descontoPercentual || 0) || 0 }}%
+                Desconto Real na Fatura: {{ Math.max(alunoSelecionado?.descontoBolsa || 0, matriculaForm.descontoPercentual || 0) || 0 }}%
               </div>
             </div>
             <div class="flex justify-end">
