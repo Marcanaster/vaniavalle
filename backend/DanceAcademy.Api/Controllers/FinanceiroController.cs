@@ -108,6 +108,18 @@ public class FinanceiroController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("faturas/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteFatura(Guid id)
+    {
+        var fatura = await _context.Faturas.FindAsync(id);
+        if (fatura == null) return NotFound();
+
+        _context.Faturas.Remove(fatura);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpPost("faturas/gerar-mensais")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GerarMensalidades()
