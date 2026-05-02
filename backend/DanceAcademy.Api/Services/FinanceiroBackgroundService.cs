@@ -50,7 +50,7 @@ public class FinanceiroBackgroundService : BackgroundService
 
         foreach (var aluno in alunos)
         {
-            var turmasAtivas = aluno.Turmas.Where(t => t.Ativo && t.ValorMensal > 0).ToList();
+            var turmasAtivas = aluno.Turmas.Where(t => t.Ativo).ToList();
             if (!turmasAtivas.Any()) continue;
 
             // Mês Alvo: Se o vencimento do aluno no mês atual ou no próximo estiver a menos de 10 dias, gera.
@@ -102,6 +102,14 @@ public class FinanceiroBackgroundService : BackgroundService
                 };
 
                 fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
+
+                if (fatura.ValorTotal == 0)
+                {
+                    fatura.Status = "Pago";
+                    fatura.DataPagamento = DateTime.UtcNow;
+                    fatura.MetodoPagamento = "Isento";
+                }
+
                 context.Faturas.Add(fatura);
             }
         }

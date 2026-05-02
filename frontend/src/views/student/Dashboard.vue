@@ -40,7 +40,7 @@
               </div>
               <div>
                 <h4 class="font-bold text-slate-800">{{ turma.nome }}</h4>
-                <p class="text-sm text-slate-500 mb-1">{{ turma.modalidade }} • {{ turma.sala || 'Sala não definida' }}</p>
+                <p class="text-sm text-slate-500 mb-1">{{ turma.modalidades?.join(', ') }} • {{ turma.sala || 'Sala não definida' }}</p>
                 <div class="inline-flex items-center gap-1 text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   {{ turma.gradeHorarios || 'Horário a definir' }}

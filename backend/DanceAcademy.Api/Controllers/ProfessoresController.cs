@@ -1,7 +1,9 @@
 using DanceAcademy.Api.DTOs;
 using DanceAcademy.Domain.Entities;
 using DanceAcademy.Domain.Interfaces;
+using DanceAcademy.Domain.Helpers;
 using DanceAcademy.Infrastructure.Data;
+using DanceAcademy.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -67,20 +69,34 @@ public class ProfessoresController : ControllerBase
                 Ativo = true
             };
 
+            string? generatedPassword = null;
             // Criar o usuário para login do professor
             if (!string.IsNullOrWhiteSpace(professor.Email))
             {
-                var user = new IdentityUser { UserName = professor.Email, Email = professor.Email };
-                var result = await _userManager.CreateAsync(user, "Prof123$"); // Senha padrão para MVP
-                if (result.Succeeded)
+                var existingUser = await _userManager.FindByEmailAsync(professor.Email);
+                if (existingUser == null)
                 {
-                    await _userManager.AddToRoleAsync(user, "Teacher");
-                    professor.UserId = user.Id;
+                    generatedPassword = PasswordHelper.GenerateRandomPassword();
+                    var user = new IdentityUser { UserName = professor.Email, Email = professor.Email };
+                    var result = await _userManager.CreateAsync(user, generatedPassword);
+                    if (result.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(user, "Teacher");
+                        professor.UserId = user.Id;
+                    }
+                    else
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        return BadRequest(new { error = $"Erro ao criar usuário de acesso: {errors}" });
+                    }
                 }
                 else
                 {
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    return BadRequest(new { error = $"Erro ao criar usuário de acesso: {errors}" });
+                    professor.UserId = existingUser.Id;
+                    if (!await _userManager.IsInRoleAsync(existingUser, "Teacher"))
+                    {
+                        await _userManager.AddToRoleAsync(existingUser, "Teacher");
+                    }
                 }
             }
 
@@ -88,19 +104,12 @@ public class ProfessoresController : ControllerBase
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            // Enviar email de boas-vindas
-            if (!string.IsNullOrWhiteSpace(professor.Email))
+            // Enviar email de boas-vindas (Apenas para NOVOS usuários)
+            if (!string.IsNullOrWhiteSpace(professor.Email) && generatedPassword != null)
             {
-                string htmlContent = $@"
-                    <h2>Olá, {professor.Nome}! Bem-vindo(a) à Dance Academy Vania Valle.</h2>
-                    <p>Seu acesso ao Portal do Professor foi criado com sucesso.</p>
-                    <p><b>Seu Login (E-mail):</b> {professor.Email}</p>
-                    <p><b>Sua Senha Provisória:</b> Prof123$</p>
-                    <br>
-                    <p>Acesse o sistema e não se esqueça de alterar sua senha!</p>
-                ";
+                string htmlContent = EmailTemplates.GetWelcomeTemplate(professor.Nome, professor.Email, generatedPassword, "Teacher");
                 try {
-                    await _emailService.SendEmailAsync(professor.Email, "Bem-vindo à Vania Valle - Acesso ao Portal", htmlContent);
+                    await _emailService.SendEmailAsync(professor.Email, "Bem-vindo à Dance Academy Vania Valle", htmlContent);
                 } catch { /* Ignora erro de email para não travar o cadastro */ }
             }
 
@@ -163,7 +172,7 @@ public class ProfessoresController : ControllerBase
         if (professor == null) return NotFound("Perfil de professor não encontrado para este usuário.");
 
         var turmas = await _context.Turmas
-            .Include(t => t.Modalidade)
+            .Include(t => t.Modalidades)
             .Include(t => t.Horarios)
             .Include(t => t.AlunosMatriculados)
                 .ThenInclude(ta => ta.Aluno)

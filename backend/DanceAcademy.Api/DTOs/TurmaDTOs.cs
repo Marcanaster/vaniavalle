@@ -10,7 +10,7 @@ public class TurmaCreateDto
     public string GradeHorarios { get; set; } = string.Empty; 
     public string Sala { get; set; } = string.Empty;
     public List<TurmaHorarioDto> Horarios { get; set; } = new();
-    public Guid ModalidadeId { get; set; }
+    public List<Guid> ModalidadeIds { get; set; } = new();
     public Guid? ProfessorId { get; set; }
 }
 

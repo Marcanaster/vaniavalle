@@ -17,7 +17,7 @@
         <span class="text-indigo-600 font-bold text-sm">{{ proximaAula.horario }}</span>
       </div>
       <h3 class="font-bold text-slate-800 text-lg">{{ proximaAula.nome }}</h3>
-      <p class="text-slate-500 text-xs mb-4">{{ proximaAula.modalidade?.nome }} • {{ proximaAula.alunosMatriculados?.length || 0 }} alunos</p>
+      <p class="text-slate-500 text-xs mb-4">{{ proximaAula.modalidades?.map(m => m.nome).join(', ') }} • {{ proximaAula.alunosMatriculados?.length || 0 }} alunos</p>
       <button @click="$router.push({ name: 'TeacherChamada', params: { id: proximaAula.id } })" class="w-full bg-white border border-indigo-200 text-indigo-600 py-2 rounded-lg font-bold text-sm hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
         Iniciar Chamada agora
       </button>
@@ -44,7 +44,7 @@
               <h4 class="font-bold text-slate-800">{{ turma.nome }}</h4>
               <span v-if="turma.status === 'Cancelada'" class="bg-rose-100 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded">CANCELADA</span>
             </div>
-            <p class="text-xs text-slate-500">{{ turma.modalidade?.nome }} • {{ turma.alunosMatriculados?.length || 0 }} alunos</p>
+            <p class="text-xs text-slate-500">{{ turma.modalidades?.map(m => m.nome).join(', ') }} • {{ turma.alunosMatriculados?.length || 0 }} alunos</p>
             <p v-if="turma.status === 'Cancelada'" class="text-[10px] text-rose-400 italic">Motivo: {{ turma.motivoCancelamento || 'Não informado' }}</p>
           </div>
         </div>

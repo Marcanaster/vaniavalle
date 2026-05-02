@@ -5,10 +5,16 @@
         <h2 class="text-2xl font-bold text-slate-800">Financeiro</h2>
         <p class="text-slate-500">Controle de faturas e pagamentos de alunos.</p>
       </div>
-      <button @click="gerarMensalidades" :disabled="gerando" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        {{ gerando ? 'Gerando...' : 'Gerar Faturas do Mês' }}
-      </button>
+      <div class="flex gap-2">
+        <button @click="showManualModal = true" class="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+          Nova Fatura Manual
+        </button>
+        <button @click="gerarMensalidades" :disabled="gerando" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          {{ gerando ? 'Gerando...' : 'Gerar Faturas do Mês' }}
+        </button>
+      </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
@@ -16,6 +22,7 @@
         <select v-model="filterStatus" class="border-slate-300 rounded-lg text-sm focus:ring-primary focus:border-primary py-2 px-3">
           <option value="Todos">Todos os Status</option>
           <option value="Pendente">Pendentes</option>
+          <option value="Atrasado">Atrasados</option>
           <option value="Pago">Pagos</option>
         </select>
       </div>
@@ -102,21 +109,31 @@
       @confirm="handleModalConfirm"
       @cancel="showConfirmModal = false"
     />
+
+    <FaturaManualModal 
+      :show="showManualModal"
+      @confirm="handleManualConfirm"
+      @cancel="showManualModal = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import api from '../../../services/api'
 import Pagination from '../../../components/Pagination.vue'
 import ConfirmModal from '../../../components/ConfirmModal.vue'
+import FaturaManualModal from './FaturaManualModal.vue'
 
+const route = useRoute()
 const faturas = ref([])
 const loading = ref(true)
 const gerando = ref(false)
 const filterStatus = ref('Todos')
 const expandedId = ref(null)
+const showManualModal = ref(false)
 
 // Controle do Modal
 const showConfirmModal = ref(false)
@@ -158,7 +175,7 @@ const toggleExpand = (id) => {
 const currentPage = ref(1)
 const pageSize = ref(10)
 
-onMounted(async () => {
+const fetchFaturas = async () => {
   loading.value = true
   try {
     const res = await api.get('/financeiro/faturas')
@@ -167,11 +184,30 @@ onMounted(async () => {
     console.error(err)
   }
   loading.value = false
+}
+
+const handleManualConfirm = async () => {
+  showManualModal.value = false
+  await fetchFaturas()
+}
+
+onMounted(async () => {
+  await fetchFaturas()
+  if (route.query.filter === 'atrasado') {
+    filterStatus.value = 'Atrasado'
+  }
 })
 
 const filteredFaturas = computed(() => {
   if (!faturas.value) return []
   if (filterStatus.value === 'Todos') return faturas.value
+  
+  if (filterStatus.value === 'Atrasado') {
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    return faturas.value.filter(f => f.status !== 'Pago' && new Date(f.dataVencimento) < hoje)
+  }
+  
   return faturas.value.filter(f => f.status === filterStatus.value)
 })
 

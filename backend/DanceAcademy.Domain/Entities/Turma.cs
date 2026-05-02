@@ -15,8 +15,7 @@ public class Turma
 
     // Relacionamentos
     public ICollection<TurmaHorario> Horarios { get; set; } = new List<TurmaHorario>();
-    public Guid ModalidadeId { get; set; }
-    public Modalidade Modalidade { get; set; } = null!;
+    public ICollection<Modalidade> Modalidades { get; set; } = new List<Modalidade>();
     
     public Guid? ProfessorId { get; set; }
     public Professor? Professor { get; set; }

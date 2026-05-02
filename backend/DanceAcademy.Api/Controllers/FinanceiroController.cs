@@ -87,6 +87,13 @@ public class FinanceiroController : ControllerBase
 
         fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
 
+        if (fatura.ValorTotal == 0)
+        {
+            fatura.Status = "Pago";
+            fatura.DataPagamento = DateTime.UtcNow;
+            fatura.MetodoPagamento = "Isento";
+        }
+
         _context.Faturas.Add(fatura);
         await _context.SaveChangesAsync();
 
@@ -135,7 +142,7 @@ public class FinanceiroController : ControllerBase
 
         foreach (var aluno in alunos)
         {
-            var turmasAtivas = aluno.Turmas.Where(t => t.Ativo && t.ValorMensal > 0).ToList();
+            var turmasAtivas = aluno.Turmas.Where(t => t.Ativo).ToList();
             if (!turmasAtivas.Any()) continue;
 
             // Define o mês de referência (se hoje > dia 20, gera para o mês que vem?)
@@ -186,6 +193,14 @@ public class FinanceiroController : ControllerBase
                 };
 
                 fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
+
+                if (fatura.ValorTotal == 0)
+                {
+                    fatura.Status = "Pago";
+                    fatura.DataPagamento = DateTime.UtcNow;
+                    fatura.MetodoPagamento = "Isento";
+                }
+
                 _context.Faturas.Add(fatura);
                 count++;
             }

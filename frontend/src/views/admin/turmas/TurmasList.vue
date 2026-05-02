@@ -17,6 +17,7 @@
           <thead class="bg-slate-50">
             <tr>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nome da Turma</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Modalidades</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nível</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Idade</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Sala</th>
@@ -26,15 +27,25 @@
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
             <tr v-if="loading">
-              <td colspan="5" class="px-6 py-10 text-center text-slate-500">Carregando turmas...</td>
+              <td colspan="7" class="px-6 py-10 text-center text-slate-500">Carregando turmas...</td>
             </tr>
             <tr v-else-if="turmas.length === 0">
-              <td colspan="5" class="px-6 py-10 text-center text-slate-500">Nenhuma turma cadastrada.</td>
+              <td colspan="7" class="px-6 py-10 text-center text-slate-500">Nenhuma turma cadastrada.</td>
             </tr>
             <tr v-for="turma in turmas" :key="turma.id" class="hover:bg-slate-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-slate-900">{{ turma.nome }}</div>
                 <div class="text-sm text-slate-500">{{ turma.gradeHorarios }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex flex-wrap gap-1">
+                  <span v-for="m in turma.modalidades" :key="m.id" class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full uppercase">
+                    {{ m.nome }}
+                  </span>
+                  <span v-if="!turma.modalidades || turma.modalidades.length === 0" class="text-slate-400 text-xs italic">
+                    Nenhuma
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ turma.nivel }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ turma.idadeMinima }} a {{ turma.idadeMaxima }} anos</td>

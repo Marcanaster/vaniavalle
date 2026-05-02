@@ -48,12 +48,10 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             .HasForeignKey(a => a.PlanoId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Relacionamento Turma -> Modalidade
+        // Relacionamento Turma <-> Modalidade (Muitos-para-Muitos)
         modelBuilder.Entity<Turma>()
-            .HasOne(t => t.Modalidade)
-            .WithMany(m => m.Turmas)
-            .HasForeignKey(t => t.ModalidadeId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasMany(t => t.Modalidades)
+            .WithMany(m => m.Turmas);
 
         // Relacionamento Turma -> Professor
         modelBuilder.Entity<Turma>()
@@ -96,8 +94,11 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             .HasForeignKey(ag => ag.AlunoId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Constraints de tamanho (Exemplos)
+        // Constraints de tamanho e unicidade
         modelBuilder.Entity<Responsavel>().Property(r => r.Nome).HasMaxLength(150);
+        modelBuilder.Entity<Responsavel>().HasIndex(r => r.Documento).IsUnique();
+        modelBuilder.Entity<Responsavel>().HasIndex(r => r.Email).IsUnique();
+
         modelBuilder.Entity<Aluno>().Property(a => a.NomeCompleto).HasMaxLength(150);
         modelBuilder.Entity<Turma>().Property(t => t.Nome).HasMaxLength(100);
 

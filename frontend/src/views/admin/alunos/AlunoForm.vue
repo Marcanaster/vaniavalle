@@ -22,8 +22,8 @@
             <input v-model="form.nomeCompleto" type="text" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">CPF *</label>
-            <input v-model="form.cpf" type="text" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <label class="block text-sm font-medium text-slate-700 mb-1">CPF (Opcional p/ menores)</label>
+            <input v-model="form.cpf" type="text" @input="formatarCpf('aluno')" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="000.000.000-00">
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Data de Nascimento *</label>
@@ -31,7 +31,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Telefone (Aluno)</label>
-            <input v-model="form.telefone" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="(00) 00000-0000">
+            <input v-model="form.telefone" type="text" @input="formatarTelefone('aluno')" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="(00) 00000-0000">
           </div>
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-slate-700 mb-1">Restrições de Saúde</label>
@@ -43,25 +43,31 @@
       <!-- Seção: Responsável -->
       <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-          <h3 class="text-lg font-bold text-slate-800">2. Responsável Financeiro</h3>
-          <p class="text-xs text-secondary font-medium">Requerido Telefone</p>
+          <div class="flex items-center gap-4">
+            <h3 class="text-lg font-bold text-slate-800">2. Responsável Financeiro</h3>
+            <label class="flex items-center gap-2 text-sm text-primary font-medium cursor-pointer bg-primary/5 px-3 py-1 rounded-full border border-primary/20 hover:bg-primary/10 transition-colors">
+              <input type="checkbox" v-model="mesmoResponsavel" @change="copiarDadosAluno" class="rounded text-primary focus:ring-primary">
+              O Aluno é o Responsável
+            </label>
+          </div>
+          <p class="text-xs text-secondary font-medium">Dados Obrigatórios para Acesso</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Nome do Responsável</label>
-            <input v-model="form.responsavel.nome" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nome do Responsável *</label>
+            <input v-model="form.responsavel.nome" type="text" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">CPF Responsável</label>
-            <input v-model="form.responsavel.documento" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <label class="block text-sm font-medium text-slate-700 mb-1">CPF Responsável *</label>
+            <input v-model="form.responsavel.documento" type="text" required @input="formatarCpf('resp')" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="000.000.000-00">
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-            <input v-model="form.responsavel.email" type="email" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <label class="block text-sm font-medium text-slate-700 mb-1">E-mail (Login de Acesso) *</label>
+            <input v-model="form.responsavel.email" type="email" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Telefone *</label>
-            <input v-model="form.responsavel.telefone" type="text" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
+            <input v-model="form.responsavel.telefone" type="text" required @input="formatarTelefone('resp')" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border" placeholder="(00) 00000-0000">
           </div>
         </div>
       </div>
@@ -152,6 +158,7 @@ const route = useRoute()
 const loading = ref(false)
 const buscandoCep = ref(false)
 const isEditing = computed(() => !!route.params.id)
+const mesmoResponsavel = ref(false)
 
 const form = ref({
   nomeCompleto: '',
@@ -177,8 +184,50 @@ const form = ref({
   }
 })
 
+const copiarDadosAluno = () => {
+  if (mesmoResponsavel.value) {
+    form.value.responsavel.nome = form.value.nomeCompleto
+    form.value.responsavel.documento = form.value.cpf
+    form.value.responsavel.telefone = form.value.telefone
+  }
+}
+
+// Watchers para manter sincronizado se a opção estiver marcada
+watch(() => form.value.nomeCompleto, (val) => {
+  if (mesmoResponsavel.value) form.value.responsavel.nome = val
+})
+watch(() => form.value.cpf, (val) => {
+  if (mesmoResponsavel.value) form.value.responsavel.documento = val
+})
+watch(() => form.value.telefone, (val) => {
+  if (mesmoResponsavel.value) form.value.responsavel.telefone = val
+})
+
 const formatarCep = () => {
   form.value.cep = form.value.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+}
+
+const formatarCpf = (target) => {
+  let val = target === 'aluno' ? form.value.cpf : form.value.responsavel.documento
+  val = val.replace(/\D/g, '')
+  if (val.length > 11) val = val.substring(0, 11)
+  val = val.replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  
+  if (target === 'aluno') form.value.cpf = val
+  else form.value.responsavel.documento = val
+}
+
+const formatarTelefone = (target) => {
+  let val = target === 'aluno' ? form.value.telefone : form.value.responsavel.telefone
+  val = val.replace(/\D/g, '')
+  if (val.length > 11) val = val.substring(0, 11)
+  val = val.replace(/^(\d{2})(\d)/g, '($1) $2')
+           .replace(/(\d{5})(\d)/, '$1-$2')
+  
+  if (target === 'aluno') form.value.telefone = val
+  else form.value.responsavel.telefone = val
 }
 
 watch(() => form.value.cep, async (newCep) => {

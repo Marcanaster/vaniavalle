@@ -20,9 +20,12 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("metrics")]
-    public async Task<IActionResult> GetMetrics()
+    public async Task<IActionResult> GetMetrics([FromQuery] int? mes = null, [FromQuery] int? ano = null)
     {
-        // Alunos Ativos (O QueryFilter global já filtra apenas os ativos)
+        var mesAlvo = mes ?? DateTime.UtcNow.Month;
+        var anoAlvo = ano ?? DateTime.UtcNow.Year;
+
+        // Alunos Ativos
         var alunosAtivos = await _context.Alunos.CountAsync();
         
         // Turmas
@@ -32,13 +35,88 @@ public class DashboardController : ControllerBase
         var leadsPendentes = await _context.AulasExperimentais
             .CountAsync(l => l.Status == "Pendente" || l.Status == "Agendada");
 
-        // Receita Mês Atual
-        var mesAtual = DateTime.UtcNow.Month;
-        var anoAtual = DateTime.UtcNow.Year;
-
         var receitaMes = await _context.Faturas
-            .Where(f => f.Status == "Pago" && f.DataPagamento.HasValue && f.DataPagamento.Value.Month == mesAtual && f.DataPagamento.Value.Year == anoAtual)
+            .Where(f => f.Status == "Pago" && f.DataPagamento.HasValue && f.DataPagamento.Value.Month == mesAlvo && f.DataPagamento.Value.Year == anoAlvo)
             .SumAsync(f => f.ValorTotal);
+
+        var receitaPrevistaMes = await _context.Faturas
+            .Where(f => f.DataVencimento.Month == mesAlvo && f.DataVencimento.Year == anoAlvo)
+            .SumAsync(f => f.ValorTotal);
+
+        // Inadimplência (Faturas não pagas e vencidas até hoje)
+        var hojeData = DateTime.UtcNow.Date;
+        var faturasVencidas = await _context.Faturas
+            .Where(f => f.Status != "Pago" && f.DataVencimento.Date < hojeData)
+            .ToListAsync();
+
+        var inadimplenciaTotal = faturasVencidas.Sum(f => f.ValorTotal);
+        var alunosInadimplentes = faturasVencidas.Select(f => f.AlunoId).Distinct().Count();
+
+        // Dados para o Gráfico de Receita e Inadimplência (6 meses terminando no mês selecionado)
+        var receitaMensalChart = new List<ChartDataDto>();
+        var inadimplenciaMensalChart = new List<ChartDataDto>();
+
+        var dataInicioChart = new DateTime(anoAlvo, mesAlvo, 1).AddMonths(-5);
+        var dataFimChart = new DateTime(anoAlvo, mesAlvo, 1).AddMonths(1).AddDays(-1);
+
+        // Busca todas as faturas relevantes para o período de 6 meses em uma única query
+        // Relevantes se: vencem no período OU foram pagas no período
+        var faturasPeriodo = await _context.Faturas
+            .Where(f => (f.DataVencimento >= dataInicioChart && f.DataVencimento <= dataFimChart) ||
+                        (f.DataPagamento.HasValue && f.DataPagamento.Value >= dataInicioChart && f.DataPagamento.Value <= dataFimChart))
+            .ToListAsync();
+
+        for (int i = 5; i >= 0; i--)
+        {
+            var inicioMes = dataInicioChart.AddMonths(5 - i);
+            var fimMes = inicioMes.AddMonths(1).AddDays(-1);
+            var nomeMes = inicioMes.ToString("MMM", new CultureInfo("pt-BR")).ToUpper();
+
+            // Arrecadado: O que foi pago DENTRO deste mês (Fluxo de Caixa)
+            var valorArrecadado = faturasPeriodo
+                .Where(f => f.Status == "Pago" && f.DataPagamento.HasValue && 
+                            f.DataPagamento.Value.Date >= inicioMes && f.DataPagamento.Value.Date <= fimMes)
+                .Sum(f => f.ValorTotal);
+
+            // Previsto: O que vence NESTE mês (Faturamento)
+            var valorPrevisto = faturasPeriodo
+                .Where(f => f.DataVencimento.Date >= inicioMes && f.DataVencimento.Date <= fimMes)
+                .Sum(f => f.ValorTotal);
+
+            // Inadimplência (Snapshot Histórico)
+            decimal valorInadimplencia = 0;
+            
+            // Se o mês em questão é o mês atual (ou futuro em relação ao servidor)
+            if (inicioMes.Year == hojeData.Year && inicioMes.Month == hojeData.Month)
+            {
+                // Mês Corrente: Apenas o que já venceu e ainda não foi pago
+                valorInadimplencia = faturasPeriodo
+                    .Where(f => f.DataVencimento.Date >= inicioMes && f.DataVencimento.Date <= fimMes && 
+                                f.Status != "Pago" && f.DataVencimento.Date < hojeData)
+                    .Sum(f => f.ValorTotal);
+            }
+            else if (inicioMes < hojeData)
+            {
+                // Mês Passado: Congelamento (O que não estava pago no último dia do mês)
+                valorInadimplencia = faturasPeriodo
+                    .Where(f => f.DataVencimento.Date >= inicioMes && f.DataVencimento.Date <= fimMes && 
+                                (f.Status != "Pago" || (f.DataPagamento.HasValue && f.DataPagamento.Value.Date > fimMes)))
+                    .Sum(f => f.ValorTotal);
+            }
+
+            receitaMensalChart.Add(new ChartDataDto
+            {
+                Label = nomeMes,
+                Value = valorArrecadado,
+                SecondaryValue = valorPrevisto
+            });
+
+            inadimplenciaMensalChart.Add(new ChartDataDto
+            {
+                Label = nomeMes,
+                Value = valorInadimplencia
+            });
+        }
 
         // Aulas de Hoje (Sempre usa UTC-3 para o Brasil se necessário, mas aqui usaremos o padrão do servidor)
         var hoje = DateTime.Today;
@@ -47,29 +125,29 @@ public class DashboardController : ControllerBase
         // 1. Buscar ocorrências já geradas para hoje (incluindo as canceladas)
         var ocorrenciasHoje = await _context.AulasOcorrencias
             .Include(o => o.Turma)
-            .ThenInclude(t => t.Modalidade)
+            .ThenInclude(t => t.Modalidades)
             .Include(o => o.Presencas)
             .Where(o => o.DataHora.Date == hoje)
             .ToListAsync();
 
         // 2. Buscar turmas que deveriam ter aula hoje mas ainda não tem ocorrência gerada
         var turmasComHorarioHoje = await _context.Turmas
-            .Include(t => t.Modalidade)
+            .Include(t => t.Modalidades)
             .Include(t => t.Horarios)
             .Include(t => t.AlunosMatriculados)
             .Where(t => t.Horarios.Any(h => h.DiaSemana == diaSemanaInt))
             .ToListAsync();
 
-        var aulasHoje = new List<TurmaHojeDto>();
+        var aulasHoje = new List<AulaHojeDto>();
 
         // Adicionar ocorrências existentes
         foreach (var oc in ocorrenciasHoje)
         {
-            aulasHoje.Add(new TurmaHojeDto
+            aulasHoje.Add(new AulaHojeDto
             {
                 Id = oc.Id,
                 Nome = oc.Turma.Nome,
-                Modalidade = oc.Turma.Modalidade.Nome,
+                Modalidade = string.Join(", ", oc.Turma.Modalidades.Select(m => m.Nome)),
                 Horario = oc.DataHora.ToString("HH:mm"),
                 Sala = oc.Turma.Sala,
                 Status = oc.Status,
@@ -87,11 +165,11 @@ public class DashboardController : ControllerBase
                 if (ocorrenciasHoje.Any(oc => oc.TurmaId == turma.Id && oc.DataHora.TimeOfDay == h.HoraInicio))
                     continue;
 
-                aulasHoje.Add(new TurmaHojeDto
+                aulasHoje.Add(new AulaHojeDto
                 {
                     Id = turma.Id,
                     Nome = turma.Nome,
-                    Modalidade = turma.Modalidade.Nome,
+                    Modalidade = string.Join(", ", turma.Modalidades.Select(m => m.Nome)),
                     Horario = h.HoraInicio.ToString(@"hh\:mm"),
                     Sala = turma.Sala,
                     Status = "Ativa",
@@ -109,7 +187,7 @@ public class DashboardController : ControllerBase
             .Where(f => f.Status == "Pago" && f.DataPagamento.HasValue)
             .OrderByDescending(f => f.DataPagamento)
             .Take(5)
-            .Select(f => new FaturaRecenteDto
+            .Select(f => new UltimoPagamentoDto
             {
                 Id = f.Id,
                 AlunoNome = f.Aluno.NomeCompleto,
@@ -126,6 +204,11 @@ public class DashboardController : ControllerBase
             TurmasAtivas = turmasAtivas,
             LeadsPendentes = leadsPendentes,
             ReceitaMes = receitaMes,
+            ReceitaPrevistaMes = receitaPrevistaMes,
+            InadimplenciaTotal = inadimplenciaTotal,
+            AlunosInadimplentes = alunosInadimplentes,
+            ReceitaMensalChart = receitaMensalChart,
+            InadimplenciaMensalChart = inadimplenciaMensalChart,
             AulasHoje = aulasHoje,
             UltimosPagamentos = ultimosPagamentos
         };

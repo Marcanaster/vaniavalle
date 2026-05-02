@@ -23,7 +23,7 @@ public class TurmasController : ControllerBase
     public async Task<IActionResult> GetTurmas()
     {
         var turmas = await _context.Turmas
-            .Include(t => t.Modalidade)
+            .Include(t => t.Modalidades)
             .Include(t => t.Professor)
             .Include(t => t.Horarios)
             .Include(t => t.AlunosMatriculados)
@@ -47,8 +47,8 @@ public class TurmasController : ControllerBase
             CapacidadeAlunos = dto.CapacidadeAlunos,
             GradeHorarios = dto.GradeHorarios,
             Sala = dto.Sala,
-            ModalidadeId = dto.ModalidadeId,
             ProfessorId = dto.ProfessorId,
+            Modalidades = await _context.Modalidades.Where(m => dto.ModalidadeIds.Contains(m.Id)).ToListAsync(),
             Horarios = dto.Horarios.Select(h => new TurmaHorario
             {
                 Id = Guid.NewGuid(),
@@ -68,7 +68,7 @@ public class TurmasController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateTurma(Guid id, [FromBody] TurmaUpdateDto dto)
     {
-        var turma = await _context.Turmas.Include(t => t.Horarios).FirstOrDefaultAsync(t => t.Id == id);
+        var turma = await _context.Turmas.Include(t => t.Horarios).Include(t => t.Modalidades).FirstOrDefaultAsync(t => t.Id == id);
         if (turma == null) return NotFound();
 
         // 1. Atualizar campos básicos
@@ -79,8 +79,15 @@ public class TurmasController : ControllerBase
         turma.CapacidadeAlunos = dto.CapacidadeAlunos;
         turma.GradeHorarios = dto.GradeHorarios;
         turma.Sala = dto.Sala;
-        turma.ModalidadeId = dto.ModalidadeId;
         turma.ProfessorId = dto.ProfessorId;
+
+        // Atualizar Modalidades
+        turma.Modalidades.Clear();
+        var modalidades = await _context.Modalidades.Where(m => dto.ModalidadeIds.Contains(m.Id)).ToListAsync();
+        foreach (var mod in modalidades)
+        {
+            turma.Modalidades.Add(mod);
+        }
 
         // 2. Limpar horários antigos e salvar para garantir a remoção
         if (turma.Horarios.Any())
@@ -182,6 +189,14 @@ public class TurmasController : ControllerBase
             }
 
             fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
+
+            if (fatura.ValorTotal == 0)
+            {
+                fatura.Status = "Pago";
+                fatura.DataPagamento = DateTime.UtcNow;
+                fatura.MetodoPagamento = "Isento";
+            }
+
             _context.Faturas.Add(fatura);
         }
 
@@ -252,6 +267,14 @@ public class TurmasController : ControllerBase
         });
 
         fatura.ValorTotal = fatura.Items.Sum(i => i.ValorFinal);
+
+        if (fatura.ValorTotal == 0)
+        {
+            fatura.Status = "Pago";
+            fatura.DataPagamento = DateTime.UtcNow;
+            fatura.MetodoPagamento = "Isento";
+        }
+
         _context.Faturas.Add(fatura);
 
         await _context.SaveChangesAsync();

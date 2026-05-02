@@ -24,7 +24,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    // Relaxed password requirements for generated passwords
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+})
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -165,12 +173,15 @@ app.UseAuthorization();
 
 app.MapPost("/api/test/email", async (IEmailService emailService) =>
 {
+    string testEmail = "re.valle@hotmail.com";
+    string htmlContent = EmailTemplates.GetWelcomeTemplate("Usuário de Teste", testEmail, "Senha123!", "Student");
+    
     await emailService.SendEmailAsync(
-        "marcanaster@gmail.com",
-        "Teste de Integração - Resend",
-        "<h1>Deu certo!</h1><p>A integração com o Resend na Academia Vania Valle está funcionando perfeitamente.</p>"
+        testEmail,
+        "Teste de Template - Academia Vania Valle",
+        htmlContent
     );
-    return Results.Ok(new { Message = "Email enviado com sucesso para marcanaster@gmail.com" });
+    return Results.Ok(new { Message = $"Email de teste enviado com sucesso para {testEmail}" });
 })
 .WithName("TestEmail")
 .WithOpenApi();

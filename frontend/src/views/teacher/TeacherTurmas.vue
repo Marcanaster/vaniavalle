@@ -17,7 +17,7 @@
         <div class="flex items-start justify-between">
           <div>
             <span class="inline-block px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded uppercase mb-2">
-              {{ turma.modalidade?.nome }}
+              {{ turma.modalidades?.map(m => m.nome).join(', ') || 'Sem modalidade' }}
             </span>
             <h3 class="text-lg font-bold text-slate-800">{{ turma.nome }}</h3>
             <p class="text-sm text-slate-500 mt-1">{{ turma.gradeHorarios }}</p>

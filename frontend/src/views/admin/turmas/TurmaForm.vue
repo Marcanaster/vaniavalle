@@ -41,12 +41,23 @@
           <input v-model="form.idadeMaxima" type="number" min="0" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Modalidade *</label>
-          <select v-model="form.modalidadeId" required class="w-full border-slate-300 rounded-lg shadow-sm focus:border-primary focus:ring-primary px-3 py-2 border">
-            <option value="" disabled>Selecione uma modalidade</option>
-            <option v-for="m in modalidades" :key="m.id" :value="m.id">{{ m.nome }}</option>
-          </select>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-slate-700 mb-2">Modalidades *</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <label v-for="m in modalidades" :key="m.id" class="flex items-center gap-2 cursor-pointer group">
+              <div class="relative flex items-center justify-center">
+                <input 
+                  type="checkbox" 
+                  :value="m.id" 
+                  v-model="form.modalidadeIds"
+                  class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-300 checked:bg-primary checked:border-primary transition-all"
+                >
+                <svg class="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <span class="text-sm text-slate-600 group-hover:text-primary transition-colors">{{ m.nome }}</span>
+            </label>
+          </div>
+          <p v-if="form.modalidadeIds.length === 0" class="mt-1 text-xs text-rose-500">Selecione pelo menos uma modalidade.</p>
         </div>
 
         <div>
@@ -137,7 +148,7 @@ const form = ref({
   gradeHorarios: '',
   sala: '',
   horarios: [],
-  modalidadeId: '',
+  modalidadeIds: [],
   professorId: null
 })
 
@@ -169,6 +180,7 @@ onMounted(async () => {
       if (turma) {
         form.value = {
           ...turma,
+          modalidadeIds: turma.modalidades ? turma.modalidades.map(m => m.id) : [],
           horarios: turma.horarios.map(h => ({
             ...h,
             horaInicio: h.horaInicio.substring(0, 5),
@@ -179,7 +191,7 @@ onMounted(async () => {
     } else {
       // Se houver apenas uma modalidade, seleciona por padrão
       if (modalidades.value.length === 1) {
-        form.value.modalidadeId = modalidades.value[0].id
+        form.value.modalidadeIds = [modalidades.value[0].id]
       }
     }
   } catch (err) {
@@ -189,8 +201,8 @@ onMounted(async () => {
 })
 
 const salvar = async () => {
-  if (!form.value.modalidadeId) {
-    toast.warning('Selecione uma modalidade!')
+  if (!form.value.modalidadeIds || form.value.modalidadeIds.length === 0) {
+    toast.warning('Selecione pelo menos uma modalidade!')
     return
   }
   
